@@ -1,7 +1,8 @@
 import {Link, useNavigate} from "react-router-dom";
 import React, {useEffect, useState} from "react";
-import InputName from "../../components/InputName.tsx";
-import InputPassword from "../../components/InputPassword.tsx";
+import InputEmail from "../../components/auth/InputEmail.tsx";
+import InputPassword from "../../components/auth/InputPassword.tsx";
+import GoogleButton from "../../components/auth/GoogleButton.tsx";
 
 export default function Login() {
   const navigate = useNavigate()
@@ -31,7 +32,7 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleLogin}>
-          <InputName value={email} onChange={(e) => setEmail(e.target.value)} />
+          <InputEmail value={email} onChange={(e) => setEmail(e.target.value)} />
           <InputPassword value={password} onChange={(e) => setPassword(e.target.value)} />
 
           <button
@@ -43,17 +44,16 @@ export default function Login() {
         </form>
 
         <p className="mt-3 text-gray-700">
-          <Link to="/ForgotPassword.tsx" className="text-blue-600 hover:underline">
+          <Link to="/forgot-password" className="text-blue-600 hover:underline">
             Lupa password
           </Link>
         </p>
 
         <div className="my-4 text-gray-500">atau</div>
 
-        <button className="w-full flex items-center justify-center gap-2 border border-gray-300 p-3 rounded hover:bg-gray-100 transition">
-          <img src="/google-icon.png" alt="Google" className="w-5 h-5" />
-          Login dengan Google
-        </button>
+        <GoogleButton
+          label={"Login dengan Google"}
+        />
 
         <p className="mt-6 text-gray-700">
           Belum punya akun?{" "}
