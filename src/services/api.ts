@@ -1,55 +1,112 @@
-import axios from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios"
+
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    skipAuth?: boolean
+  }
+  export interface InternalAxiosRequestConfig {
+    skipAuth?: boolean
+  }
+}
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: "http://localhost:8081/api/v1",
   withCredentials: true,
 })
 
+const getAccessToken = () => localStorage.getItem("accessToken")
+const setAccessToken = (t: string) => localStorage.setItem("accessToken", t)
+const clearSession = () => {
+  localStorage.removeItem("accessToken")
+  window.location.href = "/login"
+}
+
+const PUBLIC_ENDPOINTS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/password-reset",
+  "/auth/password-reset/change",
+  "/auth/google",
+]
+
+let isRefreshing = false
+let refreshSubscribers: ((token: string) => void)[] = []
+function onTokenRefreshed(token: string) {
+  refreshSubscribers.forEach((cb) => cb(token))
+  refreshSubscribers = []
+}
+function addRefreshSubscriber(cb: (token: string) => void) {
+  refreshSubscribers.push(cb)
+}
+
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  (config: InternalAxiosRequestConfig) => {
+    if (config.url && PUBLIC_ENDPOINTS.some((url) => config.url!.includes(url))) {
+      config.skipAuth = true
     }
 
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+    const token = getAccessToken()
+    if (token && !config.skipAuth) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
 
+    if (!config.headers["Content-Type"]) {
+      config.headers["Content-Type"] = "application/json"
+    }
+
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// ==== Response Interceptor ====
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  async (error) => {
-    const originalRequest = error.config;
+  (response) => response,
+  async (error: AxiosError) => {
+    const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    if (original?.skipAuth) {
+      return Promise.reject(error)
+    }
 
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true
+
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          addRefreshSubscriber((token) => {
+            if (original.headers) original.headers.Authorization = `Bearer ${token}`
+            resolve(api(original))
+          })
+        })
+      }
+
+      isRefreshing = true
       try {
-        const refreshRes = await api.post("/auth/refresh");
-        const newToken = refreshRes.data?.accessToken;
+        const refreshResponse = await api.get("/auth/refresh-token", { withCredentials: true, skipAuth: true })
+        const newToken = (refreshResponse as any).data?.accessToken
+        if (!newToken) throw new Error("Access token tidak ditemukan dalam response")
 
-        localStorage.setItem("access_token", newToken);
+        setAccessToken(newToken)
+        onTokenRefreshed(newToken)
 
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return api(originalRequest);
+        if (original.headers) original.headers.Authorization = `Bearer ${newToken}`
+        return api(original)
       } catch (refreshError) {
-        console.error("Refresh token gagal:", refreshError);
-        localStorage.removeItem("access_token");
-        window.location.href = "/login";
+        console.error("Refresh token gagal:", refreshError)
+        clearSession()
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
 
     if (error.response?.status === 500) {
-      console.error("Server Error:", error.response.data);
+      console.error("Server Error:", error.response.data)
     }
 
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
 export default api
