@@ -14,40 +14,42 @@ const api = axios.create({
   withCredentials: true,
 })
 
-const getAccessToken = () => localStorage.getItem("accessToken")
-const setAccessToken = (t: string) => localStorage.setItem("accessToken", t)
-const clearSession = () => {
-  localStorage.removeItem("accessToken")
+// 🧠 Simpan access token di memori (runtime variable)
+let accessToken: string | null = null
+
+export const setAccessToken = (t: string) => {
+  accessToken = t
+}
+
+export const getAccessToken = () => accessToken
+
+export const clearSession = () => {
+  accessToken = null
   window.location.href = "/login"
 }
 
-const PUBLIC_ENDPOINTS = [
-  "/auth/login",
-  "/auth/register",
-  "/auth/password-reset",
-  "/auth/password-reset/change",
-  "/auth/google",
-]
-
+// ==== Token Refresh Handling ====
 let isRefreshing = false
 let refreshSubscribers: ((token: string) => void)[] = []
+
 function onTokenRefreshed(token: string) {
   refreshSubscribers.forEach((cb) => cb(token))
   refreshSubscribers = []
 }
+
 function addRefreshSubscriber(cb: (token: string) => void) {
   refreshSubscribers.push(cb)
 }
 
+// ==== Request Interceptor ====
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    if (config.url && PUBLIC_ENDPOINTS.some((url) => config.url!.includes(url))) {
-      config.skipAuth = true
-    }
-
-    const token = getAccessToken()
-    if (token && !config.skipAuth) {
-      config.headers.Authorization = `Bearer ${token}`
+    // Jika skipAuth tidak diset atau false → tambahkan Authorization
+    if (!config.skipAuth) {
+      const token = getAccessToken()
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
     }
 
     if (!config.headers["Content-Type"]) {
@@ -56,7 +58,7 @@ api.interceptors.request.use(
 
     return config
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 )
 
 // ==== Response Interceptor ====
@@ -69,6 +71,7 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
+    // === Refresh token jika access token expired ===
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true
 
@@ -106,7 +109,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  }
+  },
 )
 
 export default api

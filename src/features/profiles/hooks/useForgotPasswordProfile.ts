@@ -1,5 +1,5 @@
 import { useState } from "react"
-import ProfileService from "../../../services/ProfileService.ts"
+import UserService from "../../../services/UserService.ts"
 
 export default function useForgotPasswordProfile() {
   const [loading, setLoading] = useState(false)
@@ -14,7 +14,7 @@ export default function useForgotPasswordProfile() {
 
       if (!email) throw new Error("Email wajib diisi.")
 
-      const res = await ProfileService.forgotPasswordProfile({ email })
+      const res = await UserService.forgotPasswordProfile({ email })
 
       if (res?.message?.includes("sent") || res?.status === 200) {
         setSuccess(true)

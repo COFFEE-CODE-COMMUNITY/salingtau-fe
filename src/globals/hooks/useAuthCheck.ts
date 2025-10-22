@@ -8,18 +8,12 @@ export default function useAuthCheck() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Selalu coba refresh token, meskipun localStorage kosong
-        const res = await AuthService.refreshToken();
+        const res = await AuthService.checkAuth();
 
-        // Simpan accessToken ke localStorage agar route lain bisa pakai
-        if (res?.data?.accessToken) {
-          localStorage.setItem("accessToken", res.data.accessToken);
-        }
+        console.log(res)
 
-        setIsAuthenticated(true);
+        setIsAuthenticated(res);
       } catch (err) {
-        // Gagal refresh, berarti tidak login
-        localStorage.removeItem("accessToken");
         setIsAuthenticated(false);
       } finally {
         setLoading(false);

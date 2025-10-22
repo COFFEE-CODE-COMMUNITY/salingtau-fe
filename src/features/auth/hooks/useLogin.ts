@@ -1,5 +1,6 @@
 import { useState } from "react"
 import AuthService from "../../../services/AuthService"
+import { setAccessToken } from "../../../services/api.ts";
 
 export default function useLogin() {
   const [loading, setLoading] = useState(false)
@@ -15,7 +16,7 @@ export default function useLogin() {
         throw { message: "Respons tidak valid dari server" }
       }
 
-      localStorage.setItem("accessToken", data.access_token)
+      setAccessToken(data.accessToken)
       return data
     } catch (err: any) {
       const message =

@@ -59,6 +59,17 @@ const AuthService = {
     }
   },
 
+  checkAuth: async () => {
+    try {
+      const res = await api.get("/auth/refresh-token", { withCredentials: true, skipAuth: true })
+
+      return res.status == 200
+    } catch (error) {
+      handleError(error)
+      return false
+    }
+  },
+
   forgotPassword: async (data: { email: string }) => {
     try {
       const res = await api.post(

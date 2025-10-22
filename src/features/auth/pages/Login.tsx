@@ -5,6 +5,7 @@ import InputPassword from "../components/InputPassword.tsx"
 import GoogleButton from "../components/GoogleButton.tsx"
 import useLogin from "../hooks/useLogin.ts"
 import AlertMessage from "../../../globals/components/AlertMessage.tsx"
+import AuthService from "../../../services/AuthService.ts";
 
 export default function Login() {
   const navigate = useNavigate()
@@ -15,10 +16,11 @@ export default function Login() {
 
   // redirect kalau sudah login
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('accessToken')
-    if (isLoggedIn) {
-      navigate('/homepage')
-    }
+    (async function() {
+      const isLogin = await AuthService.checkAuth()
+
+      if (isLogin) navigate("/homepage")
+    })()
   }, [navigate])
 
   // tampilkan alert kalau ada error dari hooks

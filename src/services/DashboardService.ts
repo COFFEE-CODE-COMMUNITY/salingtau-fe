@@ -9,22 +9,20 @@ const handleError = (error: any) => {
   throw { message, status: error?.response?.status || 500 }
 }
 
-const ProfileService = {
-  forgotPasswordProfile: async (data: { email: string }) => {
+const DashboardService = {
+  verifyStatus: async ()=> {
     try {
-      const res = await api.post(
-        "/auth/password-reset",
-        data,
+      const res = await api.get(
+        "/instructors/me/verification",
         {
           withCredentials: true,
-          skipAuth: true,
-          headers: { "Content-Type": "application/json" },
+          skipAuth: false,
         })
       return res.data
-    } catch (error) {
+    } catch(error) {
       handleError(error)
     }
-  },
+  }
 }
 
-export default ProfileService;
+export default DashboardService

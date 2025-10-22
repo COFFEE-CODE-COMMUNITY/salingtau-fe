@@ -23,6 +23,7 @@ import Security from "../features/profiles/pages/Security.tsx"
 import ProtectedRoute from "../globals/components/ProtectedRoute.tsx"
 import BlankPage from "../features/auth/pages/BlankPage.tsx";
 import Notifications from "../features/homepages/pages/Notification.tsx";
+import EditProfile from "../features/profiles/pages/EditProfile.tsx";
 
 export default function AppRouter() {
   return (
@@ -170,6 +171,7 @@ export default function AppRouter() {
             <Route index element={<ProfileHome />} />
             <Route path="settings" element={<Settings />} />
             <Route path="security" element={<Security />} />
+            <Route path="edit" element={<EditProfile />}/>
           </Route>
         </Route>
       </Routes>

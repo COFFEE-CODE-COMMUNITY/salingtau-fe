@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AuthService from "../../../services/AuthService";
 import { useNavigate } from "react-router-dom";
+import { clearSession } from "../../../services/api.ts";
 
 export default function useLogout() {
   const navigate = useNavigate();
@@ -17,8 +18,7 @@ export default function useLogout() {
       await AuthService.logout();
 
       // Bersihkan local storage & session
-      localStorage.removeItem("accessToken");
-      sessionStorage.clear();
+      clearSession();
 
       setSuccess(true);
 
