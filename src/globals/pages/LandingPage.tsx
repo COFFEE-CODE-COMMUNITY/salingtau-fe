@@ -2,11 +2,8 @@ import { useState } from "react"
 import {
   Menu,
   Users,
-  Award,
-  MessageCircle,
-  HelpCircle,
-  TrendingUp,
-  BookOpen,
+  Globe,
+  Radio,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -131,19 +128,19 @@ export default function LandingPage() {
                 icon: <Users className="w-6 h-6" />,
                 title: "Ekosistem Berbasis Komunitas",
                 color: "text-indigo-600 bg-indigo-100",
-                desc: "Fokus utama kami adalah pembelajaran interaktif, diskusi, dan saling membantu. Belajar jadi lebih hidup saat dilakukan bersama.",
+                desc: "Forum interaktif untuk tanya jawab dan berbagi pengalaman antar pengguna.",
               },
               {
-                icon: <Award className="w-6 h-6" />,
-                title: "Jadilah Kreator Dan Tingkatkan Reputasi",
+                icon: <Globe className="w-6 h-6" />,
+                title: "Platform Pembelajaran Terpusat",
                 color: "text-purple-600 bg-purple-100",
-                desc: "Dapatkan uang dan reputasi untuk setiap kontribusi Anda. Buktikan keahlianmu dan jadilah panutan di komunitas.",
+                desc: "Platform terpadu video belajar, forum diskusi, dan live stream dalam satu tempat.",
               },
               {
-                icon: <MessageCircle className="w-6 h-6" />,
-                title: "Forum Diskusi Cerdas",
+                icon: <Radio className="w-6 h-6" />,
+                title: "Belajar Mengajar Interaktif",
                 color: "text-sky-600 bg-sky-100",
-                desc: "Bingung? Tanyakan ke komunitas atau dapatkan jawaban instan dari Asisten AI kami yang didukung oleh Gemini.",
+                desc: "Live stream real-time agar pembelajaran terasa langsung dan seru.",
               },
             ].map((item) => (
               <div
@@ -159,51 +156,6 @@ export default function LandingPage() {
                   {item.title}
                 </h3>
                 <p className="mt-2 text-slate-600">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Konsep Section */}
-      <section id="konsep" className="py-16 md:py-24">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800">
-              Siklus Pengetahuan di{" "}
-              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                salingtau
-              </span>
-            </h2>
-            <p className="mt-4 max-w-2xl mx-auto text-slate-600">
-              Begini cara ekosistem kami bekerja untuk keuntungan semua orang.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            {[
-              {
-                icon: <HelpCircle className="w-12 h-12 text-indigo-500" />,
-                title: "1. Bertanya & Berdiskusi",
-                desc: "Punya kendala? Lemparkan ke forum. Jawaban terbaik akan mendapat upvote dan menjadi sorotan.",
-              },
-              {
-                icon: <TrendingUp className="w-12 h-12 text-purple-500" />,
-                title: "2. Dapatkan Uang & Reputasi",
-                desc: "Setiap jawaban berkualitas dan konten yang Anda buat akan diganjar uang dan reputasi sebagai apresiasi.",
-              },
-              {
-                icon: <BookOpen className="w-12 h-12 text-sky-500" />,
-                title: "3. Akses Pengetahuan Baru",
-                desc: "Gunakan poin untuk membuka kursus premium atau mengikuti sesi diskusi live eksklusif dari para ahli.",
-              },
-            ].map((step) => (
-              <div key={step.title} className="p-6">
-                <div className="bg-white border-2 border-slate-200 rounded-full h-24 w-24 flex items-center justify-center mx-auto">
-                  {step.icon}
-                </div>
-                <h3 className="mt-6 text-xl font-bold">{step.title}</h3>
-                <p className="mt-2 text-slate-600">{step.desc}</p>
               </div>
             ))}
           </div>
