@@ -25,6 +25,7 @@ import BlankPage from "../features/auth/pages/BlankPage.tsx";
 import Notifications from "../features/homepages/pages/Notification.tsx";
 import EditProfile from "../features/profiles/pages/EditProfile.tsx";
 import MyForum from "../features/forums/pages/MyForum.tsx";
+import LandingPage from "../globals/pages/LandingPage.tsx"
 
 export default function AppRouter() {
   return (
@@ -33,7 +34,7 @@ export default function AppRouter() {
         {/* ========================= */}
         {/*  AUTH ROUTES */}
         {/* ========================= */}
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
