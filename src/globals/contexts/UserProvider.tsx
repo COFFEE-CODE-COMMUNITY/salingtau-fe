@@ -22,46 +22,36 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   useEffect(() => {
     const initUser = async () => {
-      const token = getAccessToken()
+      let token = getAccessToken()
+
+      if (!token) {
+        // ⏱️ coba refresh token dulu
+        try {
+          const refreshed = await AuthService.refreshToken()
+          if (refreshed?.accessToken) {
+            setAccessToken(refreshed.accessToken)
+            token = refreshed.accessToken
+          }
+        } catch {
+          console.warn("No access token or refresh failed")
+        }
+      }
+
       if (!token) {
         setLoading(false)
         return
       }
 
       try {
-        // 1️⃣ Decode JWT sementara
-        const payload = decodeJwt<User>(token)
-        if (payload) setUser(payload)
-
-        // 2️⃣ Ambil data user dari backend
         const data = await UserService.getMe()
         if (data) setUser(data)
-      } catch (err: any) {
-        console.warn("[UserProvider] Gagal memuat user:", err.message)
-
-        // 3️⃣ Coba refresh token jika gagal karena 401/expired
-        try {
-          console.info("[UserProvider] Mencoba refresh token...")
-          const refreshed = await AuthService.refreshToken()
-          if (refreshed?.accessToken) {
-            setAccessToken(refreshed.accessToken)
-
-            // ✅ Ambil ulang data user
-            const data = await UserService.getMe()
-            if (data) {
-              setUser(data)
-              console.info("[UserProvider] Token berhasil diperbarui")
-              return
-            }
-          }
-        } catch (refreshError) {
-          console.error("[UserProvider] Refresh token gagal:", refreshError)
-          clearUser()
-        }
+      } catch (err) {
+        clearUser()
       } finally {
         setLoading(false)
       }
     }
+
 
     initUser()
   }, [])

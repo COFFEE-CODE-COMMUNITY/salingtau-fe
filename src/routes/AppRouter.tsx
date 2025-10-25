@@ -24,6 +24,7 @@ import ProtectedRoute from "../globals/components/ProtectedRoute.tsx"
 import BlankPage from "../features/auth/pages/BlankPage.tsx";
 import Notifications from "../features/homepages/pages/Notification.tsx";
 import EditProfile from "../features/profiles/pages/EditProfile.tsx";
+import MyForum from "../features/forums/pages/MyForum.tsx";
 
 export default function AppRouter() {
   return (
@@ -89,10 +90,18 @@ export default function AppRouter() {
             }
           />
           <Route
-            path="forum/thread"
+            path="forum/thread/:threadId"
             element={
               <ProtectedRoute>
                 <ForumThread />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="forum/myThread"
+            element={
+              <ProtectedRoute>
+                <MyForum/>
               </ProtectedRoute>
             }
           />
