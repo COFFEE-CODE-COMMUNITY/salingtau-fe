@@ -14,7 +14,6 @@ export default function Login() {
   const { login, loading, error } = useLogin()
   const [alert, setAlert] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null)
 
-  // redirect kalau sudah login
   useEffect(() => {
     (async function() {
       const isLogin = await AuthService.checkAuth()
@@ -23,7 +22,6 @@ export default function Login() {
     })()
   }, [navigate])
 
-  // tampilkan alert kalau ada error dari hooks
   useEffect(() => {
     if (error) {
       setAlert({ type: "error", message: error || "Terjadi kesalahan saat login" })
@@ -37,7 +35,6 @@ export default function Login() {
       localStorage.setItem("access_token", token)
       navigate("/homepage")
     } catch (err: any) {
-      // Jika service lempar error (misal throw error di useLogin)
       setAlert({ type: "error", message: err.message || "Login gagal" })
     }
   }
