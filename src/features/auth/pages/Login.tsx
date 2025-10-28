@@ -1,11 +1,10 @@
 import { Link, useNavigate } from "react-router-dom"
 import React, { useEffect, useState } from "react"
-import InputEmail from "../components/InputEmail.tsx"
-import InputPassword from "../components/InputPassword.tsx"
 import GoogleButton from "../components/GoogleButton.tsx"
 import useLogin from "../hooks/useLogin.ts"
 import AlertMessage from "../../../globals/components/AlertMessage.tsx"
 import AuthService from "../../../services/AuthService.ts";
+import {Input} from "@/components/ui/input.tsx";
 
 export default function Login() {
   const navigate = useNavigate()
@@ -51,8 +50,18 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleLogin}>
-          <InputEmail value={email} onChange={(e) => setEmail(e.target.value)} />
-          <InputPassword value={password} onChange={(e) => setPassword(e.target.value)} />
+          <Input
+            type="email"
+            placeholder="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Input
+            type="password"
+            placeholder="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
           <button
             type="submit"
