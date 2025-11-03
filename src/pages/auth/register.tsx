@@ -38,7 +38,10 @@ export default function Register() {
 
     setLoading(true)
 
-    await api.post("/auth/register", data)
+    await api.post("/auth/register", data, {
+      withCredentials: false,
+      skipAuth: true
+    })
       .then(response => {
         console.log(response.data)
         if (response.status === 201) {
@@ -50,6 +53,9 @@ export default function Register() {
 
         setLoading(false)
       })
+    if (!errors) {
+      navigate("/login")
+    }
   }
 
   return (
@@ -72,7 +78,7 @@ export default function Register() {
           <TextField
             type='text'
             placeholder='Firstname'
-            error={!!errors.firstName}
+            error={Boolean(errors.firstName)}
             helperText={errors.firstName && errors.firstName[0]}
             name='firstName'
             value={data.firstName}
@@ -82,7 +88,7 @@ export default function Register() {
           <TextField
             type='text'
             placeholder='Lastname'
-            error={!!errors.lastName}
+            error={Boolean(errors.lastName)}
             helperText={errors.lastName && errors.lastName[0]}
             name='lastName'
             value={data.lastName}
@@ -92,7 +98,7 @@ export default function Register() {
           <TextField
             type='email'
             placeholder='Email'
-            error={!!errors.email}
+            error={Boolean(errors.email)}
             helperText={errors.email && errors.email[0]}
             name='email'
             value={data.email}
@@ -100,7 +106,7 @@ export default function Register() {
           />
           <PasswordField
             placeholder='Password'
-            error={!!errors.password}
+            error={Boolean(errors.password)}
             helperText={errors.password && errors.password[0]}
             name='password'
             value={data.password}

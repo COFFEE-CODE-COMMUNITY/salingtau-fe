@@ -1,12 +1,7 @@
-"use client"
-
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
+  User,
 } from "lucide-react"
 
 import {
@@ -29,17 +24,57 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import {UserRole, useUser} from "@/utils/user-context.tsx"
+import { useNavigate } from "react-router-dom"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+const userFallback = {
+  name: "Guest",
+  email: "guest@salingtau.com",
+  avatar: ""
+}
+
+export function NavUser() {
   const { isMobile } = useSidebar()
+  const { user, clearUser } = useUser()
+  const navigate = useNavigate()
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+  }
+
+  const getProfilePicture = () => {
+    if (user?.profilePictures && user.profilePictures.length > 0) {
+      return user.profilePictures[0].url
+    }
+    return undefined
+  }
+
+  const handleLogout = () => {
+    clearUser()
+    navigate("/login")
+  }
+
+  const handleLogin = () => {
+    navigate("/login")
+  }
+
+  const displayUser = user
+    ? {
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      avatar: getProfilePicture(),
+      initials: getInitials(user.firstName, user.lastName),
+      isGuest: false,
+      roles: user.roles || [],
+    }
+    : {
+      name: userFallback.name,
+      email: userFallback.email,
+      avatar: "/fallback-avatar.jpg",
+      initials: "GU",
+      isGuest: true,
+      roles: [],
+    }
 
   return (
     <SidebarMenu>
@@ -51,12 +86,14 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarImage src={displayUser.avatar} alt={displayUser.name} />
+                <AvatarFallback className="rounded-lg">
+                  {displayUser.initials}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-semibold">{displayUser.name}</span>
+                <span className="truncate text-xs">{displayUser.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -70,42 +107,45 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage src={displayUser.avatar} alt={displayUser.name} />
+                  <AvatarFallback className="rounded-lg">
+                    {displayUser.initials}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-semibold">{displayUser.name}</span>
+                  <span className="truncate text-xs">{displayUser.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
+
+            {/* ✅ Menu untuk user yang sudah login */}
+            {!displayUser.isGuest && (
+              <>
+                <DropdownMenuGroup>
+                  {/* Tampilkan hanya jika user punya role INSTRUCTOR */}
+                  {displayUser.roles.includes("INSTRUCTOR" as UserRole) && (
+                    <DropdownMenuItem onClick={() => navigate("/instructor/dashboard")}>
+                      <User />
+                      Instructor dashboard
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut />
+                  Log out
+                </DropdownMenuItem>
+              </>
+            )}
+
+            {/* ✅ Menu untuk guest user */}
+            {displayUser.isGuest && (
+              <DropdownMenuItem onClick={handleLogin}>
+                <User />
+                Sign in
               </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

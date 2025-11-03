@@ -15,8 +15,12 @@ export function GoogleButton({ label = "Sign in" }: GoogleButtonProps) {
       setError(null)
 
       // OAuth2 Google request inline
-      const res = await api.get("/auth/google?platform=WEB")
+      const res = await api.get("/auth/google?platform=WEB", {
+        withCredentials: false,
+        skipAuth: true
+      })
       const response = res.data
+      console.log(response)
 
       if (response?.url) {
         window.location.href = response.url

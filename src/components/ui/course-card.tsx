@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
+import { StarRating } from "@/components/ui/star-rating.tsx";
 
 export type Course = {
   image: string,
@@ -59,20 +59,16 @@ export const CourseCard = ({ course }: { course: Course }) => {
         </h3>
         <p className="mt-1 text-sm text-gray-500">by {course.creator}</p>
 
-        {/* Rating */}
-        <div className="flex items-center mt-3 space-x-1">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`w-4 h-4 ${
-                i < Math.round(course.rating)
-                  ? "text-yellow-400 fill-yellow-400"
-                  : "text-gray-300"
-              }`}
-            />
-          ))}
-          <span className="ml-2 text-sm text-gray-600">
-            {course.rating} ({course.totalRatings})
+        {/* Rating - Horizontal Layout */}
+        <div className="flex items-center mt-3 gap-2">
+          <StarRating
+            initialRating={course.rating}
+            readonly={true}
+            size={16}
+            showRatingText={true}
+          />
+          <span className="text-sm text-gray-500">
+            ({course.totalRatings.toLocaleString()})
           </span>
         </div>
       </div>

@@ -6,49 +6,52 @@ declare module "axios" {
   }
   export interface InternalAxiosRequestConfig {
     skipAuth?: boolean
+    _retry?: boolean
   }
 }
 
 const api = axios.create({
   baseURL: "http://localhost:8081/api/v1",
   withCredentials: true,
-  validateStatus: () => true
+  validateStatus: () => true,
+  timeout: 10000, // 10s timeout
 })
 
-// 🧠 Simpan access token di memori (runtime variable)
 let accessToken: string | null = null
+let isRefreshing = false
+let refreshSubscribers: Array<(token: string) => void> = []
 
-export const setAccessToken = (t: string) => {
-  accessToken = t
+export const setAccessToken = (token: string) => {
+  accessToken = token
+  console.log("✅ Access token set")
 }
 
-export const getAccessToken = () => accessToken
+export const getAccessToken = (): string | null => accessToken
 
 export const clearSession = () => {
-  // 🛡️ Pastikan tidak double redirect
-  if (window.location.pathname !== "/login") {
-    accessToken = null
-    window.location.href = "/login"
-  }
+  accessToken = null
+  refreshSubscribers = []
+  isRefreshing = false
+  console.log("🧹 Session cleared")
 }
 
-
-// ==== Token Refresh Handling ====
-let isRefreshing = false
-let refreshSubscribers: ((token: string) => void)[] = []
-
-function onTokenRefreshed(token: string) {
-  refreshSubscribers.forEach(cb => cb(token))
+const onTokenRefreshed = (token: string) => {
+  refreshSubscribers.forEach(callback => callback(token))
   refreshSubscribers = []
 }
 
-function addRefreshSubscriber(cb: (token: string) => void) {
-  refreshSubscribers.push(cb)
+const addRefreshSubscriber = (callback: (token: string) => void) => {
+  refreshSubscribers.push(callback)
 }
 
-// ==== Request Interceptor ====
-api.interceptors.request.use(
+const hasRefreshTokenCookie = (): boolean => {
+  return document.cookie.split(';').some(cookie => {
+    const trimmed = cookie.trim()
+    return trimmed.startsWith('refresh_token=') || trimmed.startsWith('refreshToken=')
+  })
+}
 
+api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (!config.skipAuth) {
       const token = getAccessToken()
@@ -63,77 +66,93 @@ api.interceptors.request.use(
 
     return config
   },
-  error => Promise.reject(error),
+  (error) => {
+    console.error("❌ Request interceptor error:", error)
+    return Promise.reject(error)
+  }
 )
 
-// ==== Response Interceptor ====
 api.interceptors.response.use(
-  response => response,
+  (response) => response,
   async (error: AxiosError) => {
-    const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+    const originalRequest = error.config as InternalAxiosRequestConfig
 
-    // 🧩 Jangan refresh kalau skipAuth atau sudah mencoba sebelumnya
-    if (original?.skipAuth || original?._retry) {
+    if (
+      !originalRequest ||
+      originalRequest.skipAuth ||
+      originalRequest._retry ||
+      originalRequest.url?.includes("/auth/refresh-token")
+    ) {
       return Promise.reject(error)
     }
 
-    // 🧩 Jangan refresh kalau error dari endpoint refresh-token sendiri
-    if (original?.url?.includes("/auth/refresh-token")) {
-      return Promise.reject(error)
-    }
-
-    // === Refresh token jika access token expired ===
     if (error.response?.status === 401) {
-      original._retry = true
-
-      // 🧠 Cek apakah cookie refresh token ada
-      const hasRefreshCookie =
-        document.cookie.includes("refresh_token") || document.cookie.includes("RefreshToken")
-
-      if (!hasRefreshCookie) {
-        console.warn("🚫 Tidak ada refresh token di cookie — clear session langsung")
+      // ✅ Cek apakah ada refresh token cookie sebelum coba refresh
+      if (!hasRefreshTokenCookie()) {
+        console.warn("🚫 No refresh token cookie found")
         clearSession()
+
+        // ✅ HANYA redirect jika bukan di halaman login
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login"
+        }
         return Promise.reject(error)
       }
 
+      // ✅ Queue management untuk concurrent requests
       if (isRefreshing) {
-        return new Promise(resolve => {
-          addRefreshSubscriber(token => {
-            if (original.headers) original.headers.Authorization = `Bearer ${token}`
-            resolve(api(original))
+        console.log("⏳ Queueing request while refreshing...")
+        return new Promise((resolve) => {
+          addRefreshSubscriber((newToken: string) => {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`
+            resolve(api(originalRequest))
           })
         })
       }
 
+      originalRequest._retry = true
       isRefreshing = true
+
       try {
+        console.log("🔄 Refreshing access token...")
+
         const refreshResponse = await api.get("/auth/refresh-token", {
           withCredentials: true,
           skipAuth: true,
         })
-        const newToken = (refreshResponse as any).data?.accessToken
-        if (!newToken) throw new Error("Access token tidak ditemukan dalam response")
+
+        const newToken = refreshResponse.data?.accessToken
+
+        if (!newToken) {
+          throw new Error("No access token in refresh response")
+        }
 
         setAccessToken(newToken)
         onTokenRefreshed(newToken)
 
-        if (original.headers) original.headers.Authorization = `Bearer ${newToken}`
-        return api(original)
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
+
+        console.log("✅ Token refreshed, retrying original request")
+        return api(originalRequest)
+
       } catch (refreshError) {
-        console.error("Refresh token gagal:", refreshError)
+        console.error("❌ Token refresh failed:", refreshError)
+
+        // ✅ Clear session dan redirect
         clearSession()
+
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login"
+        }
+
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false
       }
     }
 
-    if (error.response?.status === 500) {
-      console.error("Server Error:", error.response.data)
-    }
-
     return Promise.reject(error)
-  },
+  }
 )
 
 export default api

@@ -14,27 +14,28 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import {Link} from "react-router-dom";
 
-export function NavMain({
-                          items,
-                        }: {
-  items: {
-    title: string
-    url: string
-    icon?: LucideIcon
-    isActive?: boolean
-    items?: {
+export function NavMain(
+  {
+    items,
+  }: {
+    items: {
       title: string
       url: string
+      icon?: LucideIcon
+      isActive?: boolean
+      items?: {
+        title: string
+        url: string
+      }[]
     }[]
-  }[]
-}) {
+  }) {
   return (
     <SidebarGroup>
       <SidebarMenu>
         {items.map((item) =>
           item.items && item.items.length > 0 ? (
-            // ==== Menu dengan submenu: collapsible ====
             <Collapsible
               key={item.title}
               asChild
@@ -43,19 +44,25 @@ export function NavMain({
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={item.title}>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    className="hover:bg-blue-600/20 text-black hover:text-blue-600 data-[state=open]:bg-blue-600/20 data-[state=open]:text-blue-600 [&>svg]:hover:text-blue-600 [&>svg]:data-[state=open]:text-blue-600 [&>svg]:size-5"
+                  >
                     {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    <span className="text-base font-medium">{item.title}</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 size-5" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
                     {item.items.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild>
+                        <SidebarMenuSubButton
+                          asChild
+                          className="hover:bg-blue-600/20 text-black hover:text-blue-600 data-[active=true]:bg-blue-600/20 data-[active=true]:text-blue-600"
+                        >
                           <a href={subItem.url}>
-                            <span>{subItem.title}</span>
+                            <span className="text-sm font-medium">{subItem.title}</span>
                           </a>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
@@ -65,14 +72,16 @@ export function NavMain({
               </SidebarMenuItem>
             </Collapsible>
           ) : (
-            // ==== Menu tanpa submenu: button/link biasa ====
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild tooltip={item.title}>
-                <a href={item.url} className="flex items-center w-full">
+              <SidebarMenuButton
+                asChild
+                tooltip={item.title}
+                className="hover:bg-blue-600/20 text-black hover:text-blue-600 data-[active=true]:bg-blue-600/20 data-[active=true]:text-blue-600 [&>svg]:hover:text-blue-600 [&>svg]:data-[active=true]:text-blue-600 [&>svg]:size-5"
+              >
+                <Link to={item.url} className="flex items-center w-full">
                   {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  {/* Tidak ada chevron/panah */}
-                </a>
+                  <span className="text-base font-medium">{item.title}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )

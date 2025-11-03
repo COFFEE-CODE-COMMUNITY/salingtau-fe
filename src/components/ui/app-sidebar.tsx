@@ -1,32 +1,27 @@
-"use client"
-import * as React from "react"
+import * as React from "react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+} from "@/components/ui/sidebar";
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Home,
   Book,
   Banknote,
   User as UserIcon,
-} from "lucide-react"
+} from "lucide-react";
+import {UserRole, useUser} from "@/utils/user-context.tsx";
 
-export const data = {
-  user: {
-    name: "Budi Setiawan",
-    email: "budi@example.com",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-  },
-  navMain: [
+export const navData = {
+  student: [
     {
       title: "Home",
-      url: "dashboard/student",
+      url: "/dashboard/student",
       icon: Home,
     },
     {
@@ -34,8 +29,8 @@ export const data = {
       url: "#",
       icon: Book,
       items: [
-        { title: "My ExploreCourse", url: "my-course" },
-        { title: "Explore", url: "explore" },
+        { title: "My Course", url: "/dashboard/student/my-course" },
+        { title: "Explore", url: "/dashboard/student/explore" },
       ],
     },
     {
@@ -43,7 +38,7 @@ export const data = {
       url: "#",
       icon: Banknote,
       items: [
-        { title: "History", url: "history" },
+        { title: "History", url: "/dashboard/student/history" },
       ],
     },
     {
@@ -51,31 +46,78 @@ export const data = {
       url: "#",
       icon: UserIcon,
       items: [
-        { title: "Profile", url: "#" },
-        { title: "Account", url: "#" },
-        { title: "Apply as instructor", url: "#" },
+        { title: "Profile", url: "/dashboard/student/profile" },
+        { title: "Account", url: "/dashboard/student/account" },
+        { title: "Apply as instructor", url: "/dashboard/student/apply-as-instructor" },
       ],
     },
   ],
-  projects: [
-
+  instructor: [
+    {
+      title: "Home",
+      url: "/dashboard/instructor",
+      icon: Home,
+    },
+    {
+      title: "Course",
+      url: "#",
+      icon: Book,
+      items: [
+        { title: "My Course", url: "/dashboard/instructor/my-course" },
+        { title: "Explore", url: "/dashboard/instructor/explore" },
+      ],
+    },
+    {
+      title: "Transaction",
+      url: "#",
+      icon: Banknote,
+      items: [
+        { title: "History", url: "/dashboard/instructor/history" },
+      ],
+    },
+    {
+      title: "User",
+      url: "#",
+      icon: UserIcon,
+      items: [
+        { title: "Profile", url: "/dashboard/instructor/profile" },
+        { title: "Account", url: "/dashboard/instructor/account" },
+      ],
+    },
   ],
+  admin: [
+    {
+      title: "Admin Dashboard",
+      url: "/dashboard/admin",
+      icon: Home,
+    },
+  ]
 }
 
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useUser()
+  let navItems = navData.student
+
+  if (user?.roles?.includes("ADMIN" as UserRole)) {
+    navItems = navData.admin
+  } else if (user?.roles?.includes("INSTRUCTOR" as UserRole)) {
+    navItems = navData.instructor
+  } else if (user?.roles?.includes("STUDENT" as UserRole)) {
+    navItems = navData.student
+  }
+
   return (
-    <Sidebar collapsible="icon" className="bg-[#e2e8f0] text-[#334155]" {...props}>
+    <Sidebar collapsible="icon" className="bg-white text-[#334155]" {...props}>
       <SidebarHeader>
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navItems} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

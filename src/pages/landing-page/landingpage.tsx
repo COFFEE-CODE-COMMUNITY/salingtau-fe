@@ -16,17 +16,17 @@ export default function LandingPage() {
       <header className="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-200">
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="text-2xl font-bold text-slate-800">
-            saling<span className="text-indigo-600">tau</span>
+            saling<span className="text-blue-600">tau</span>
           </div>
 
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#fitur" className="hover:text-indigo-600 transition-colors">
+            <a href="#fitur" className="hover:text-blue-600 transition-colors">
               Fitur
             </a>
-            <a href="#konsep" className="hover:text-indigo-600 transition-colors">
+            <a href="#konsep" className="hover:text-blue-600 transition-colors">
               Konsep
             </a>
-            <a href="#kreator" className="hover:text-indigo-600 transition-colors">
+            <a href="#kreator" className="hover:text-blue-600 transition-colors">
               Untuk Kreator
             </a>
           </div>
@@ -34,13 +34,13 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center space-x-4">
             <Link
               to="/login"
-              className="text-slate-600 hover:text-indigo-600 font-medium transition-colors"
+              className="text-slate-600 hover:text-blue-600 font-medium transition-colors"
             >
               Masuk
             </Link>
             <Link
               to="/register"
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
               Daftar Gratis
             </Link>
@@ -58,25 +58,25 @@ export default function LandingPage() {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden bg-white p-6 border-b space-y-3">
-          <a href="#fitur" className="block py-2 hover:text-indigo-600">
+          <a href="#fitur" className="block py-2 hover:text-blue-600">
             Fitur
           </a>
-          <a href="#konsep" className="block py-2 hover:text-indigo-600">
+          <a href="#konsep" className="block py-2 hover:text-blue-600">
             Konsep
           </a>
-          <a href="#kreator" className="block py-2 hover:text-indigo-600">
+          <a href="#kreator" className="block py-2 hover:text-blue-600">
             Untuk Kreator
           </a>
           <div className="mt-4 pt-4 border-t">
             <Link
               to="/login"
-              className="block w-full text-center text-slate-600 hover:text-indigo-600 font-medium py-2"
+              className="block w-full text-center text-slate-600 hover:text-blue-600 font-medium py-2"
             >
               Masuk
             </Link>
             <Link
               to="/register"
-              className="block w-full text-center mt-2 bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
+              className="block w-full text-center mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
             >
               Daftar Gratis
             </Link>
@@ -88,7 +88,7 @@ export default function LandingPage() {
       <main className="container mx-auto px-6 py-16 md:py-24 text-center">
         <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight">
           Bukan Sekadar Belajar, <br />
-          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
             Tapi Tumbuh Bersama.
           </span>
         </h1>
@@ -99,7 +99,7 @@ export default function LandingPage() {
         <div className="mt-8 flex justify-center gap-4">
           <Link
             to="/register"
-            className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-indigo-700 transition-transform hover:scale-105"
+            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-transform hover:scale-105"
           >
             Gabung Sekarang
           </Link>
@@ -112,7 +112,7 @@ export default function LandingPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-800">
               Kenapa{" "}
-              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
                 salingtau
               </span>{" "}
               Berbeda?
@@ -127,19 +127,19 @@ export default function LandingPage() {
               {
                 icon: <Users className="w-6 h-6" />,
                 title: "Ekosistem Berbasis Komunitas",
-                color: "text-indigo-600 bg-indigo-100",
+                color: "text-blue-600 bg-blue-100",
                 desc: "Forum interaktif untuk tanya jawab dan berbagi pengalaman antar pengguna.",
               },
               {
                 icon: <Globe className="w-6 h-6" />,
                 title: "Platform Pembelajaran Terpusat",
-                color: "text-purple-600 bg-purple-100",
+                color: "text-blue-600 bg-blue-100",
                 desc: "Platform terpadu video belajar, forum diskusi, dan live stream dalam satu tempat.",
               },
               {
                 icon: <Radio className="w-6 h-6" />,
                 title: "Belajar Mengajar Interaktif",
-                color: "text-sky-600 bg-sky-100",
+                color: "text-blue-600 bg-blue-100",
                 desc: "Live stream real-time agar pembelajaran terasa langsung dan seru.",
               },
             ].map((item) => (
@@ -188,7 +188,7 @@ export default function LandingPage() {
       <footer className="bg-slate-800 text-slate-300 py-12">
         <div className="container mx-auto px-6 text-center">
           <p className="text-lg font-bold">
-            saling<span className="text-indigo-400">tau</span>
+            saling<span className="text-blue-400">tau</span>
           </p>
           <p className="mt-4 text-sm text-slate-400">
             &copy; 2025 salingtau. Semua hak cipta dilindungi.

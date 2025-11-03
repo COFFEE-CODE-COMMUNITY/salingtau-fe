@@ -93,7 +93,7 @@ export default function MyCourse() {
           loader={<p className="text-center py-4">Loading...</p>}
           endMessage={
             <p className="text-center py-6 text-gray-500">
-              🎉 Semua course sudah ditampilkan.
+              Semua course sudah ditampilkan.
             </p>
           }
         >
