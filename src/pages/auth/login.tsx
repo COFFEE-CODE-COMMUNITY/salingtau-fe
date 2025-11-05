@@ -24,7 +24,6 @@ export default function Login() {
   const [errors, setErrors] = useState<LoginErrors>({})
 
   useEffect(() => {
-    console.log("Use effect login dipanggil")
     if (user && user.id !== "fallback-user") {
       const userRoles = Array.isArray(user.roles) ? user.roles : []
 
@@ -63,15 +62,11 @@ export default function Login() {
         setAccessToken(response.data.accessToken)
         console.log("🔑 Token set:", response.data.accessToken.substring(0, 20) + "...")
 
-        // ✅ Fetch user data
         const me = await getMe()
 
         if (me) {
-          // ✅ Save user ke context (TIDAK ke localStorage)
           saveUser(me)
 
-          console.log("✅ Login successful, user saved to context")
-          console.log(me)
         } else {
           setErrors({ email: ["Failed to fetch user data"] })
         }

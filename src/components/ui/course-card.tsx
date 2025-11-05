@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { StarRating } from "@/components/ui/star-rating.tsx";
-
 export type Course = {
+  id: string,
   image: string,
   category: string,
   title: string,
@@ -35,7 +35,7 @@ function CategoryColor(categoryName: string): string {
 export const CourseCard = ({ course }: { course: Course }) => {
   return (
     <Link
-      to="/courses/player"
+      to={`/dashboard/student/course/${course.id}`}
       className="block bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow transform hover:-translate-y-1"
     >
       <div className="relative">

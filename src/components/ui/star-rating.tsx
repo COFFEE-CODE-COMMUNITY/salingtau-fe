@@ -10,7 +10,6 @@ interface StarRatingProps {
   onRatingChange?: (rating: number) => void
 }
 
-// ✅ Custom star style untuk Tailwind colors
 const customStyles = {
   itemShapes: Star,
   activeFillColor: '#facc15',
@@ -39,7 +38,7 @@ export const StarRating = ({
         readOnly={readonly}
         style={{ maxWidth: size * 5 + 10 }}
         itemStyles={customStyles}
-        halfFillMode="svg" // ✅ Enable half stars
+        halfFillMode="svg"
       />
       {showRatingText && (
         <span className="text-sm font-semibold text-gray-700">
