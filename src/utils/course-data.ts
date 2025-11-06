@@ -1,5 +1,12 @@
 import type { Course } from "@/components/ui/course-card.tsx";
 
+export enum CourseType {
+  video = "video",
+  article = "article",
+  file = "file",
+  external = "external"
+}
+
 export interface CourseDetail extends Course {
   totalStudents?: number;
   instructor: {
@@ -68,7 +75,7 @@ Kursus ini cocok untuk pemula yang ingin memulai karir di bidang data science. D
         lectures: [
           { id: "lec-1", title: "What is Data Science?", type: "video", duration: 201, watchedDuration: 120, completed: false },
           { id: "lec-2", title: "Setting Up Python Environment", type: "video", duration: 342, watchedDuration: 300, completed: false },
-          { id: "lec-3", title: "Course Resources", type: "file", duration: 0, watchedDuration: 0, completed: false },
+          { id: "lec-3", title: "Course Resources", type: "article", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
       {
@@ -146,7 +153,7 @@ Bootcamp komprehensif yang akan mengubah Anda dari pemula menjadi **Full-Stack D
         lectures: [
           { id: "lec-4", title: "JavaScript ES6+", type: "video", duration: 622, watchedDuration: 300, completed: false },
           { id: "lec-5", title: "React Basics", type: "video", duration: 535, watchedDuration: 250, completed: false },
-          { id: "lec-6", title: "State Management", type: "video", duration: 730, watchedDuration: 120, completed: false },
+          { id: "lec-6", title: "State Management", type: "article", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -205,7 +212,7 @@ Design complete products including mobile apps, web applications, and SaaS platf
         title: "2. Figma Mastery",
         lectures: [
           { id: "lec-3", title: "Figma Interface Overview", type: "video", duration: 344, watchedDuration: 0, completed: false },
-          { id: "lec-4", title: "Creating Wireframes", type: "video", duration: 550, watchedDuration: 0, completed: false },
+          { id: "lec-4", title: "Creating Wireframes", type: "article", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -265,7 +272,7 @@ Python adalah bahasa pemrograman **paling populer** di dunia dengan aplikasi di:
         lectures: [
           { id: "lec-1", title: "Installing Python", type: "video", duration: 255, watchedDuration: 0, completed: false },
           { id: "lec-2", title: "Your First Python Program", type: "video", duration: 390, watchedDuration: 0, completed: false },
-          { id: "lec-3", title: "Variables and Data Types", type: "video", duration: 525, watchedDuration: 0, completed: false },
+          { id: "lec-3", title: "Variables and Data Types", type: "article", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
       {
@@ -335,7 +342,7 @@ Build production-ready **iOS** dan **Android** apps dengan satu codebase menggun
         title: "2. Navigation & Routing",
         lectures: [
           { id: "lec-3", title: "React Navigation Setup", type: "video", duration: 500, watchedDuration: 0, completed: false },
-          { id: "lec-4", title: "Stack Navigator", type: "video", duration: 675, watchedDuration: 0, completed: false },
+          { id: "lec-4", title: "Stack Navigator", type: "article", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -411,7 +418,7 @@ Build ML models for:
         title: "2. Data Preprocessing",
         lectures: [
           { id: "lec-3", title: "Handling Missing Data", type: "video", duration: 645, watchedDuration: 0, completed: false },
-          { id: "lec-4", title: "Feature Scaling", type: "video", duration: 450, watchedDuration: 0, completed: false },
+          { id: "lec-4", title: "Feature Scaling", type: "article", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -484,7 +491,7 @@ Pelajari strategi **Digital Marketing** terkini untuk grow business di era digit
         title: "2. SEO Strategies",
         lectures: [
           { id: "lec-3", title: "Keyword Research Techniques", type: "video", duration: 750, watchedDuration: 0, completed: false },
-          { id: "lec-4", title: "On-Page SEO Optimization", type: "video", duration: 555, watchedDuration: 0, completed: false },
+          { id: "lec-4", title: "On-Page SEO Optimization", type: "article", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -557,7 +564,7 @@ Master **financial analysis** dan investment strategies untuk membangun wealth.
         title: "2. Valuation Methods",
         lectures: [
           { id: "lec-3", title: "DCF Valuation", type: "video", duration: 920, watchedDuration: 0, completed: false },
-          { id: "lec-4", title: "Comparable Analysis", type: "video", duration: 730, watchedDuration: 0, completed: false },
+          { id: "lec-4", title: "Comparable Analysis", type: "article", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -625,7 +632,7 @@ Complete 10 photography assignments to create a professional portfolio that attr
         title: "1. Camera Basics",
         lectures: [
           { id: "lec-1", title: "Understanding Your Camera", type: "video", duration: 510, watchedDuration: 0, completed: false },
-          { id: "lec-2", title: "Exposure Triangle Explained", type: "video", duration: 735, watchedDuration: 0, completed: false },
+          { id: "lec-2", title: "Exposure Triangle Explained", type: "article", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
       {
@@ -720,7 +727,7 @@ Access to virtual lab with:
         id: "section-2",
         title: "2. Reconnaissance Techniques",
         lectures: [
-          { id: "lec-4", title: "Passive Information Gathering", type: "video", duration: 615, watchedDuration: 0, completed: false },
+          { id: "lec-4", title: "Passive Information Gathering", type: "article", duration: 0, watchedDuration: 0, completed: false },
           { id: "lec-5", title: "Active Scanning Methods", type: "video", duration: 880, watchedDuration: 0, completed: false },
         ],
       },

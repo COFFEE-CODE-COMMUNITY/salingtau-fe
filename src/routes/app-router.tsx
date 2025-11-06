@@ -34,7 +34,7 @@ export function AppRouter() {
             <Route path="apply-as-instructor" element={<ApplyAsInstructor />} />
             <Route path="profile" element={<Profile />} />
             <Route path="course/:courseId" element={<CourseDetail />} />
-            <Route path="course/play" element={<PlayCourse />} />
+            <Route path="course/play/:courseId" element={<PlayCourse />} />
           </Route>
 
 
@@ -42,7 +42,9 @@ export function AppRouter() {
 
         {/* Instructor Routes */}
         <Route element={<InstructorRoute />}>
-          <Route path="/dashboard/instructor" element={<StudentHomepage />} />
+          <Route path="/dashboard/instructor" element={<Layout />}>
+            <Route index element={<StudentHomepage />} />
+          </Route>
         </Route>
 
         {/* Admin Routes */}

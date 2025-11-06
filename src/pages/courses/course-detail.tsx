@@ -217,7 +217,7 @@ const CourseDetailPage = () => {
                               className="flex items-center justify-between p-4 border-t border-gray-100 hover:bg-gray-50 transition-colors"
                             >
                               <Link
-                                to={'/dashboard/student/course/play'}
+                                to={`/dashboard/student/course/play/${courseId}`}
                                 className="flex items-center gap-3"
                               >
                                 {getLectureIcon(lecture.type)}
