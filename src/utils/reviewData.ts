@@ -1,4 +1,4 @@
-// Sample reviews data - you can move this to your course-data.ts
+// Sample reviews data - you can move this to your courseData.ts
 export const sampleReviews = [
   {
     id: "1",

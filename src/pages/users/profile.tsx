@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, Globe, Facebook, Instagram, Linkedin, Youtube, Twitter, Loader2 } from 'lucide-react';
 import { useUser } from '@/utils/user-context';
-import { FALLBACK_USER } from '@/utils/fallback-profile.ts';
+import { FALLBACK_USER } from '@/utils/fallbackProfile.ts';
 import api from '@/services/api';
 import {getMe} from "@/services/getMe.ts";
 

@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react"
+import {createContext, useContext} from "react"
 
 export enum Language {
   ENGLISH_US = "en-US",
@@ -13,7 +13,6 @@ export enum UserStatus {
 export enum UserRole {
   STUDENT = "student",
   INSTRUCTOR = "instructor",
-  ADMIN = "admin",
 }
 
 export interface ImageMetadata {
@@ -61,3 +60,4 @@ export const useUser = (): UserContextValue => {
   }
   return context
 }
+

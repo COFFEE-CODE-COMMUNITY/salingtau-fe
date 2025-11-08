@@ -2,7 +2,7 @@ import React, {useMemo, useState} from "react"
 import InfiniteScroll from "react-infinite-scroll-component"
 import {Search} from "lucide-react"
 import {CourseCard} from "@/components/ui/course-card.tsx"
-import {coursesData} from "@/utils/course-data.ts"
+import {coursesData} from "@/utils/courseData.ts"
 import {Combobox} from "@/components/ui/combobox.tsx"
 import {SortByCourse} from "@/components/ui/sort-by-course.tsx"
 

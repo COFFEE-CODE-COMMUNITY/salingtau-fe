@@ -22,7 +22,7 @@ export interface CourseDetail extends Course {
     lectures: {
       id: string;
       title: string;
-      type: "video" | "article" | "file";
+      type: "video" | "article" | "file" | "external";
       duration: number;
       watchedDuration: number;
       completed: boolean;
@@ -85,6 +85,8 @@ Kursus ini cocok untuk pemula yang ingin memulai karir di bidang data science. D
           { id: "lec-4", title: "Introduction to Pandas", type: "video", duration: 490, watchedDuration: 330, completed: false },
           { id: "lec-5", title: "Series and DataFrame", type: "video", duration: 395, watchedDuration: 10, completed: false },
           { id: "lec-6", title: "Data Cleaning Techniques", type: "video", duration: 740, watchedDuration: 0, completed: false },
+          { id: "lec-7", title: "Download Dataset Files", type: "file", duration: 0, watchedDuration: 0, completed: false },
+          { id: "lec-8", title: "External Learning Resource: Pandas Documentation", type: "external", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -154,6 +156,8 @@ Bootcamp komprehensif yang akan mengubah Anda dari pemula menjadi **Full-Stack D
           { id: "lec-4", title: "JavaScript ES6+", type: "video", duration: 622, watchedDuration: 300, completed: false },
           { id: "lec-5", title: "React Basics", type: "video", duration: 535, watchedDuration: 250, completed: false },
           { id: "lec-6", title: "State Management", type: "article", duration: 0, watchedDuration: 0, completed: false },
+          { id: "lec-7", title: "Download Dataset Files", type: "file", duration: 0, watchedDuration: 0, completed: false },
+          { id: "lec-8", title: "External Learning Resource: Pandas Documentation", type: "external", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -213,6 +217,8 @@ Design complete products including mobile apps, web applications, and SaaS platf
         lectures: [
           { id: "lec-3", title: "Figma Interface Overview", type: "video", duration: 344, watchedDuration: 0, completed: false },
           { id: "lec-4", title: "Creating Wireframes", type: "article", duration: 0, watchedDuration: 0, completed: false },
+          { id: "lec-7", title: "Download Dataset Files", type: "file", duration: 0, watchedDuration: 0, completed: false },
+          { id: "lec-8", title: "External Learning Resource: Pandas Documentation", type: "external", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -281,6 +287,8 @@ Python adalah bahasa pemrograman **paling populer** di dunia dengan aplikasi di:
         lectures: [
           { id: "lec-4", title: "If Statements", type: "video", duration: 440, watchedDuration: 0, completed: false },
           { id: "lec-5", title: "Loops in Python", type: "video", duration: 615, watchedDuration: 0, completed: false },
+          { id: "lec-7", title: "Download Dataset Files", type: "file", duration: 0, watchedDuration: 0, completed: false },
+          { id: "lec-8", title: "External Learning Resource: Pandas Documentation", type: "external", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -343,6 +351,8 @@ Build production-ready **iOS** dan **Android** apps dengan satu codebase menggun
         lectures: [
           { id: "lec-3", title: "React Navigation Setup", type: "video", duration: 500, watchedDuration: 0, completed: false },
           { id: "lec-4", title: "Stack Navigator", type: "article", duration: 0, watchedDuration: 0, completed: false },
+          { id: "lec-7", title: "Download Dataset Files", type: "file", duration: 0, watchedDuration: 0, completed: false },
+          { id: "lec-8", title: "External Learning Resource: Pandas Documentation", type: "external", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],
@@ -419,316 +429,8 @@ Build ML models for:
         lectures: [
           { id: "lec-3", title: "Handling Missing Data", type: "video", duration: 645, watchedDuration: 0, completed: false },
           { id: "lec-4", title: "Feature Scaling", type: "article", duration: 0, watchedDuration: 0, completed: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: "7",
-    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2670&auto=format&fit=crop",
-    category: "Business",
-    title: "Digital Marketing Mastery 2024",
-    rating: 4.5,
-    totalRatings: 1100,
-    totalStudents: 3200,
-    creator: "David Martinez",
-    price: 0,
-    instructor: {
-      name: "David Martinez",
-      avatar: "https://i.pravatar.cc/100?img=52",
-      bio: "Digital marketing strategist yang telah membantu 100+ businesses grow online.",
-    },
-    description: `# Digital Marketing Complete Course
-
-Pelajari strategi **Digital Marketing** terkini untuk grow business di era digital.
-
-## What You'll Learn
-
-### SEO (Search Engine Optimization)
-- Keyword research
-- On-page optimization
-- Link building strategies
-- Technical SEO
-
-### Social Media Marketing
-- Facebook & Instagram Ads
-- LinkedIn marketing
-- TikTok strategies
-- Content creation
-
-### Email Marketing
-- List building
-- Email automation
-- A/B testing
-- Analytics
-
-### Content Marketing
-- Blog writing
-- Video marketing
-- Storytelling
-- Content distribution
-
-## Why This Course?
-
-- **Up-to-date strategies** for 2024
-- **Real case studies** from successful campaigns
-- **Hands-on projects** to build your portfolio
-- **Certification** upon completion
-
-> Bonus: Access to exclusive marketing templates and tools!`,
-    totalDuration: "10h 30m",
-    sections: [
-      {
-        id: "section-1",
-        title: "1. Digital Marketing Fundamentals",
-        lectures: [
-          { id: "lec-1", title: "Introduction to Digital Marketing", type: "video", duration: 320, watchedDuration: 0, completed: false },
-          { id: "lec-2", title: "Marketing Funnel Basics", type: "video", duration: 465, watchedDuration: 0, completed: false },
-        ],
-      },
-      {
-        id: "section-2",
-        title: "2. SEO Strategies",
-        lectures: [
-          { id: "lec-3", title: "Keyword Research Techniques", type: "video", duration: 750, watchedDuration: 0, completed: false },
-          { id: "lec-4", title: "On-Page SEO Optimization", type: "article", duration: 0, watchedDuration: 0, completed: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: "8",
-    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2670&auto=format&fit=crop",
-    category: "Finance",
-    title: "Financial Analysis & Investment Strategy",
-    rating: 4.7,
-    totalRatings: 750,
-    totalStudents: 1900,
-    creator: "Robert Chang",
-    price: 1200000,
-    instructor: {
-      name: "Robert Chang",
-      avatar: "https://i.pravatar.cc/100?img=15",
-      bio: "CFA charterholder dengan 15 tahun pengalaman di investment banking.",
-    },
-    description: `# Financial Analysis & Investment
-
-Master **financial analysis** dan investment strategies untuk membangun wealth.
-
-## Course Overview
-
-### Financial Statement Analysis
-- Balance Sheet analysis
-- Income Statement interpretation
-- Cash Flow Statement
-- Financial Ratios
-
-### Valuation Techniques
-- Discounted Cash Flow (DCF)
-- Comparable Company Analysis
-- Precedent Transactions
-- Asset-based Valuation
-
-### Investment Strategies
-- Value Investing
-- Growth Investing
-- Dividend Investing
-- Index Fund Investing
-
-### Portfolio Management
-- Asset Allocation
-- Diversification strategies
-- Risk management
-- Rebalancing
-
-## Tools You'll Use
-
-- Excel for financial modeling
-- Python for data analysis
-- Bloomberg Terminal basics
-- Portfolio tracking tools
-
-*Perfect for aspiring analysts, investors, and finance professionals!*`,
-    totalDuration: "14h 20m",
-    sections: [
-      {
-        id: "section-1",
-        title: "1. Financial Statements",
-        lectures: [
-          { id: "lec-1", title: "Understanding Balance Sheets", type: "video", duration: 690, watchedDuration: 0, completed: false },
-          { id: "lec-2", title: "Income Statement Analysis", type: "video", duration: 585, watchedDuration: 0, completed: false },
-        ],
-      },
-      {
-        id: "section-2",
-        title: "2. Valuation Methods",
-        lectures: [
-          { id: "lec-3", title: "DCF Valuation", type: "video", duration: 920, watchedDuration: 0, completed: false },
-          { id: "lec-4", title: "Comparable Analysis", type: "article", duration: 0, watchedDuration: 0, completed: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: "9",
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2670&auto=format&fit=crop",
-    category: "Photography",
-    title: "Professional Photography: From Beginner to Pro",
-    rating: 4.8,
-    totalRatings: 1350,
-    totalStudents: 3800,
-    creator: "Lisa Anderson",
-    price: 800000,
-    instructor: {
-      name: "Lisa Anderson",
-      avatar: "https://i.pravatar.cc/100?img=28",
-      bio: "Award-winning photographer dengan klien dari National Geographic dan Vogue.",
-    },
-    description: `# Professional Photography Course
-
-Transform your photography skills dari pemula hingga **professional photographer**.
-
-## What You'll Master
-
-### Camera Fundamentals
-- Understanding exposure triangle
-- Aperture, shutter speed, ISO
-- Focus techniques
-- White balance
-
-### Composition Techniques
-- Rule of thirds
-- Leading lines
-- Framing
-- Symmetry and patterns
-
-### Lighting Mastery
-- Natural light photography
-- Studio lighting setup
-- Flash photography
-- Light modifiers
-
-### Post-Processing
-- Adobe Lightroom
-- Adobe Photoshop
-- Color grading
-- Retouching
-
-## Photography Genres Covered
-
-- **Portrait Photography**
-- **Landscape Photography**
-- **Street Photography**
-- **Product Photography**
-- **Wedding Photography**
-
-## Build Your Portfolio
-
-Complete 10 photography assignments to create a professional portfolio that attracts clients.`,
-    totalDuration: "16h 45m",
-    sections: [
-      {
-        id: "section-1",
-        title: "1. Camera Basics",
-        lectures: [
-          { id: "lec-1", title: "Understanding Your Camera", type: "video", duration: 510, watchedDuration: 0, completed: false },
-          { id: "lec-2", title: "Exposure Triangle Explained", type: "article", duration: 0, watchedDuration: 0, completed: false },
-        ],
-      },
-      {
-        id: "section-2",
-        title: "2. Composition Rules",
-        lectures: [
-          { id: "lec-3", title: "Rule of Thirds", type: "video", duration: 465, watchedDuration: 0, completed: false },
-          { id: "lec-4", title: "Leading Lines and Depth", type: "video", duration: 570, watchedDuration: 0, completed: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: "10",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2670&auto=format&fit=crop",
-    category: "Cybersecurity",
-    title: "Ethical Hacking & Penetration Testing",
-    rating: 4.9,
-    totalRatings: 2100,
-    totalStudents: 4500,
-    creator: "Alex Thompson",
-    price: 2500000,
-    instructor: {
-      name: "Alex Thompson",
-      avatar: "https://i.pravatar.cc/100?img=63",
-      bio: "Certified Ethical Hacker (CEH) dan security consultant untuk Fortune 500 companies.",
-    },
-    description: `# Ethical Hacking Complete Course
-
-Become a **Certified Ethical Hacker** dan learn to protect systems from cyber threats.
-
-## Comprehensive Training
-
-### Reconnaissance & Footprinting
-- Information gathering
-- Network scanning
-- Enumeration techniques
-- Social engineering
-
-### Vulnerability Analysis
-- Vulnerability scanning
-- Security auditing
-- Exploit research
-- Penetration testing methodology
-
-### System Hacking
-- Password cracking
-- Privilege escalation
-- Maintaining access
-- Covering tracks
-
-### Web Application Security
-- SQL Injection
-- Cross-Site Scripting (XSS)
-- CSRF attacks
-- Security misconfigurations
-
-### Network Security
-- Firewall testing
-- IDS/IPS evasion
-- VPN security
-- Wireless network hacking
-
-## Certification Prep
-
-This course prepares you for:
-- **CEH (Certified Ethical Hacker)**
-- **OSCP (Offensive Security Certified Professional)**
-- **CompTIA Security+**
-
-## Lab Environment
-
-Access to virtual lab with:
-- Kali Linux
-- Metasploit Framework
-- Burp Suite
-- Wireshark
-
-⚠️ **Legal Notice**: All techniques taught are for legal, authorized testing only.`,
-    totalDuration: "22h 30m",
-    sections: [
-      {
-        id: "section-1",
-        title: "1. Introduction to Ethical Hacking",
-        lectures: [
-          { id: "lec-1", title: "What is Ethical Hacking?", type: "video", duration: 345, watchedDuration: 0, completed: false },
-          { id: "lec-2", title: "Legal and Ethical Considerations", type: "video", duration: 500, watchedDuration: 0, completed: false },
-          { id: "lec-3", title: "Setting Up Kali Linux", type: "video", duration: 750, watchedDuration: 0, completed: false },
-        ],
-      },
-      {
-        id: "section-2",
-        title: "2. Reconnaissance Techniques",
-        lectures: [
-          { id: "lec-4", title: "Passive Information Gathering", type: "article", duration: 0, watchedDuration: 0, completed: false },
-          { id: "lec-5", title: "Active Scanning Methods", type: "video", duration: 880, watchedDuration: 0, completed: false },
+          { id: "lec-7", title: "Download Dataset Files", type: "file", duration: 0, watchedDuration: 0, completed: false },
+          { id: "lec-8", title: "External Learning Resource: Pandas Documentation", type: "external", duration: 0, watchedDuration: 0, completed: false },
         ],
       },
     ],

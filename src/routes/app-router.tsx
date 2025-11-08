@@ -10,7 +10,7 @@ import ExploreCourse from "@/pages/courses/explore-course.tsx";
 import MyCourse from "@/pages/courses/my-course.tsx";
 import ApplyAsInstructor from "@/pages/users/apply-as-instructor.tsx";
 import Profile from "@/pages/users/profile.tsx";
-import { AdminRoute, InstructorRoute, StudentRoute } from "@/utils/protected-routes.tsx";
+import { InstructorRoute, StudentRoute } from "@/utils/protected-routes.tsx";
 import CourseDetail from "@/pages/courses/course-detail.tsx";
 import PlayCourse from "@/pages/courses/play-course.tsx";
 
@@ -36,19 +36,18 @@ export function AppRouter() {
             <Route path="course/:courseId" element={<CourseDetail />} />
             <Route path="course/play/:courseId" element={<PlayCourse />} />
           </Route>
-
-
         </Route>
 
         {/* Instructor Routes */}
         <Route element={<InstructorRoute />}>
           <Route path="/dashboard/instructor" element={<Layout />}>
             <Route index element={<StudentHomepage />} />
+            <Route path="course" element={<MyCourse />} />
+            <Route path="revenue" element={<Profile />} />
+            <Route path="rating" element={<StudentHomepage />} />
           </Route>
         </Route>
 
-        {/* Admin Routes */}
-        <Route element={<AdminRoute />}>{/* nanti diisi */}</Route>
       </Routes>
     </BrowserRouter>
   );

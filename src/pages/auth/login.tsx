@@ -5,7 +5,8 @@ import { TextField } from "@/components/ui/textfield"
 import { PasswordField } from "@/components/ui/passwordfield"
 import api, { setAccessToken } from "@/services/api"
 import { getMe } from "@/services/getMe.ts"
-import {UserRole, useUser} from "@/utils/user-context.tsx"
+import { useUser} from "@/utils/user-context.tsx"
+import {useUserStore} from "@/utils/useActiveRoles.ts";
 
 interface LoginBody {
   email: string
@@ -22,20 +23,18 @@ export default function Login() {
   const [loadingBtn, setLoadingBtn] = useState(false)
   const [data, setData] = useState<LoginBody>({ email: "", password: "" })
   const [errors, setErrors] = useState<LoginErrors>({})
+  const activeRole = useUserStore((state) => state.activeRole);
 
   useEffect(() => {
-    if (user && user.id !== "fallback-user") {
-      const userRoles = Array.isArray(user.roles) ? user.roles : []
-
-      if (userRoles.includes(UserRole.ADMIN)) {
-        navigate("/dashboard/admin", { replace: true })
-      } else if (userRoles.includes(UserRole.INSTRUCTOR)) {
+    if (user && user.id !== "fallback-user" && activeRole) {
+      if (activeRole === "instructor") {
         navigate("/dashboard/instructor", { replace: true })
-      } else if (userRoles.includes(UserRole.STUDENT)) {
+      } else if (activeRole === "student") {
         navigate("/dashboard/student", { replace: true })
       }
     }
-  }, [user, navigate])
+  }, [user, activeRole, navigate])
+
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -58,9 +57,7 @@ export default function Login() {
       })
 
       if (response.status === 200 && response.data.accessToken) {
-        // ✅ Set access token di runtime variable
         setAccessToken(response.data.accessToken)
-        console.log("🔑 Token set:", response.data.accessToken.substring(0, 20) + "...")
 
         const me = await getMe()
 

@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import {Link, useParams} from "react-router-dom";
 import { ChevronDown, ChevronUp, Star, Users, Tag, PlayCircle, FileText, Folder, CheckCircle, Clock } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { coursesData } from "@/utils/course-data.ts";
+import { coursesData } from "@/utils/courseData.ts";
 import CourseReviewsSection from "@/components/ui/course-review-section.tsx";
-import {sampleRatingDistribution, sampleReviews} from "@/utils/review-data.ts";
+import {sampleRatingDistribution, sampleReviews} from "@/utils/reviewData.ts";
 import CircularProgressBar from "@/components/ui/circular-progress-bar.tsx";
 
 // Helper function untuk konversi detik ke format MM:SS

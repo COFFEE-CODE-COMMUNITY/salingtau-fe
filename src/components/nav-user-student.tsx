@@ -24,8 +24,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import {UserRole, useUser} from "@/utils/user-context.tsx"
+import { useUser } from "@/utils/user-context.tsx"
 import { useNavigate } from "react-router-dom"
+import {useUserStore} from "@/utils/useActiveRoles.ts";
 
 const userFallback = {
   name: "Guest",
@@ -33,10 +34,11 @@ const userFallback = {
   avatar: ""
 }
 
-export function NavUser() {
+export function NavUserStudent() {
   const { isMobile } = useSidebar()
   const { user, clearUser } = useUser()
   const navigate = useNavigate()
+  const setActiveRole = useUserStore((state) => state.setActiveRole)
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
@@ -51,10 +53,6 @@ export function NavUser() {
 
   const handleLogout = () => {
     clearUser()
-    navigate("/login")
-  }
-
-  const handleLogin = () => {
     navigate("/login")
   }
 
@@ -118,34 +116,27 @@ export function NavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
-
-            {/* ✅ Menu untuk user yang sudah login */}
-            {!displayUser.isGuest && (
-              <>
-                <DropdownMenuGroup>
-                  {/* Tampilkan hanya jika user punya role INSTRUCTOR */}
-                  {displayUser.roles.includes("INSTRUCTOR" as UserRole) && (
-                    <DropdownMenuItem onClick={() => navigate("/instructor/dashboard")}>
-                      <User />
-                      Instructor dashboard
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut />
-                  Log out
-                </DropdownMenuItem>
-              </>
-            )}
-
-            {/* ✅ Menu untuk guest user */}
-            {displayUser.isGuest && (
-              <DropdownMenuItem onClick={handleLogin}>
-                <User />
-                Sign in
+            <>
+              <DropdownMenuGroup>
+                {/* Tampilkan menu Instructor Dashboard hanya jika user punya role INSTRUCTOR */}
+                {user?.roles && user.roles.length > 1 && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setActiveRole("instructor")
+                      navigate("/dashboard/instructor")
+                    }}
+                  >
+                    <User />
+                    Instructor Dashboard
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut />
+                Log out
               </DropdownMenuItem>
-            )}
+            </>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
