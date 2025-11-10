@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react"
+import React, { useCallback, useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { TextField } from "@/components/ui/textfield"
 import api from "@/services/api"
@@ -35,7 +35,7 @@ export default function ForgotPassword() {
     setLoading(true)
 
     await api
-      .post("/auth/forgot-password", data)
+      .post("/auth/password-reset", data)
       .then((response) => {
         console.log(response.data)
         if (response.status === 200) {

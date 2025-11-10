@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, Globe, Facebook, Instagram, Linkedin, Youtube, Twitter, Loader2 } from 'lucide-react';
-import { useUser } from '@/utils/user-context';
+import { useUser } from '@/utils/user-context.tsx';
 import { FALLBACK_USER } from '@/utils/fallbackProfile.ts';
-import api from '@/services/api';
+import api from '@/services/api.ts';
 import {getMe} from "@/services/getMe.ts";
 
 const UserProfilePage = () => {

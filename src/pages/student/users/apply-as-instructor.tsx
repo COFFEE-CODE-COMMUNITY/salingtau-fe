@@ -1,6 +1,6 @@
 import { Users, Clock, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useState } from "react";
-import Veriff from "@/pages/users/veriff.tsx";
+import Veriff from "@/pages/student/users/veriff.tsx";
 import api from "@/services/api.ts";
 
 export default function ApplyAsInstructor() {

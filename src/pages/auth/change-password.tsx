@@ -1,6 +1,8 @@
 import React, { useCallback, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { PasswordField } from "@/components/ui/passwordfield"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
 import api from "@/services/api"
 
 interface ChangePasswordBody {
@@ -16,6 +18,7 @@ export default function ChangePassword() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string>("")
   const [data, setData] = useState<ChangePasswordBody>({
     password: "",
     confirmPassword: "",
@@ -26,6 +29,7 @@ export default function ChangePassword() {
     (e: React.ChangeEvent<HTMLInputElement>): void => {
       setData({ ...data, [e.target.name]: e.target.value })
       setErrors({ ...errors, [e.target.name]: "" })
+      setErrorMessage("") // Clear alert message
     },
     [data, errors]
   )
@@ -50,7 +54,7 @@ export default function ChangePassword() {
 
     // Get token from URL
     const params = new URLSearchParams(window.location.search)
-    const token = params.get("token")
+    const token = params.get("token")?.toString()
 
     if (!token) {
       setErrors({
@@ -60,10 +64,10 @@ export default function ChangePassword() {
     }
 
     setLoading(true)
+    setErrorMessage("")
 
     await api
-      .post("/auth/forgot-password/change", {
-        token,
+      .post(`/auth/password-reset/change?token=${token}`, {
         password: data.password,
         confirmPassword: data.confirmPassword,
         logoutAll: true,
@@ -86,22 +90,11 @@ export default function ChangePassword() {
       .catch((error) => {
         console.error("Change password error:", error)
 
-        if (error.response?.status === 401) {
-          setErrors({
-            confirmPassword: [], password: [
-              error.response?.data?.message ||
-              "Failed to reset password.",
-            ],
-          })
-        } else if (error.response?.data?.errors) {
+        const message = error.response?.data?.message || "Failed to reset password. Please try again."
+        setErrorMessage(message)
+
+        if (error.response?.data?.errors) {
           setErrors(error.response.data.errors)
-        } else {
-          setErrors({
-            confirmPassword: [], password: [
-              error.response?.data?.message ||
-              "Failed to reset password.",
-            ],
-          })
         }
 
         setLoading(false)
@@ -120,6 +113,13 @@ export default function ChangePassword() {
         <p className="text-gray-600 text-sm mb-6">
           Enter your new password below
         </p>
+
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit}>
           <PasswordField

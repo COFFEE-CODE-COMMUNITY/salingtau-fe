@@ -5,14 +5,14 @@ import Register from "@/pages/auth/register.tsx";
 import ForgotPassword from "@/pages/auth/forgot-password.tsx";
 import ChangePassword from "@/pages/auth/change-password.tsx";
 import { Layout } from "@/components/ui/layout.tsx";
-import StudentHomepage from "@/pages/dashboard/student-homepage.tsx";
-import ExploreCourse from "@/pages/courses/explore-course.tsx";
-import MyCourse from "@/pages/courses/my-course.tsx";
-import ApplyAsInstructor from "@/pages/users/apply-as-instructor.tsx";
-import Profile from "@/pages/users/profile.tsx";
+import StudentHomepage from "@/pages/student/dashboard/student-homepage.tsx";
+import ExploreCourse from "@/pages/student/courses/explore-course.tsx";
+import MyCourse from "@/pages/student/courses/my-course.tsx";
+import ApplyAsInstructor from "@/pages/student/users/apply-as-instructor.tsx";
+import Profile from "@/pages/student/users/profile.tsx";
 import { InstructorRoute, StudentRoute } from "@/utils/protected-routes.tsx";
-import CourseDetail from "@/pages/courses/course-detail.tsx";
-import PlayCourse from "@/pages/courses/play-course.tsx";
+import CourseDetail from "@/pages/student/courses/course-detail.tsx";
+import PlayCourse from "@/pages/student/courses/play-course.tsx";
 
 export function AppRouter() {
   return (

@@ -7,14 +7,14 @@ import { Code, FileText, PlayCircle, ExternalLink, Clock } from "lucide-react";
 import type { CourseDetail } from "@/utils/courseData.ts";
 import { coursesData } from "@/utils/courseData.ts";
 import Article from "./article.tsx";
-import { FileDownloadDialog } from "@/components/ui/file-download-dialog";
-import { ExternalLinkDialog } from "@/components/ui/external-link-dialog";
+import { FileDownloadDialog } from "@/components/ui/file-download-dialog.tsx";
+import { ExternalLinkDialog } from "@/components/ui/external-link-dialog.tsx";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/components/ui/accordion.tsx";
 
 const PlayCourse = () => {
   const { courseId } = useParams<{ courseId: string }>();
