@@ -1,268 +1,290 @@
-// import { CreditCard, ArrowUpRight, ArrowDownLeft, Filter, Search } from 'lucide-react'
-// import { useUser } from "@/utils/user-context.tsx"
-// import { useState } from 'react'
-//
-// interface Transaction {
-//   id: string
-//   type: 'credit' | 'debit'
-//   title: string
-//   description: string
-//   amount: number
-//   date: string
-//   status: 'completed' | 'pending' | 'failed'
-// }
-//
-// export default function TransactionHistory() {
-//   const { user } = useUser()
-//   const [searchQuery, setSearchQuery] = useState('')
-//   const [filterType, setFilterType] = useState<'all' | 'credit' | 'debit'>('all')
-//
-//   // Mock transaction data - replace with actual API call
-//   const mockTransactions: Transaction[] = [
-//     {
-//       id: '1',
-//       type: 'credit',
-//       title: 'Course Purchase Refund',
-//       description: 'Refund for Web Development Course',
-//       amount: 299000,
-//       date: '2025-11-06',
-//       status: 'completed'
-//     },
-//     {
-//       id: '2',
-//       type: 'debit',
-//       title: 'Course Purchase',
-//       description: 'Data Science with Python',
-//       amount: 450000,
-//       date: '2025-11-05',
-//       status: 'completed'
-//     },
-//     {
-//       id: '3',
-//       type: 'debit',
-//       title: 'Course Purchase',
-//       description: 'Full-Stack Web Developer Bootcamp',
-//       amount: 550000,
-//       date: '2025-11-03',
-//       status: 'completed'
-//     },
-//     {
-//       id: '4',
-//       type: 'credit',
-//       title: 'Wallet Top Up',
-//       description: 'Added funds to wallet',
-//       amount: 1000000,
-//       date: '2025-11-01',
-//       status: 'completed'
-//     },
-//     {
-//       id: '5',
-//       type: 'debit',
-//       title: 'Course Purchase',
-//       description: 'UI/UX Design Fundamentals',
-//       amount: 350000,
-//       date: '2025-10-28',
-//       status: 'pending'
-//     }
-//   ]
-//
-//   const filteredTransactions = mockTransactions.filter(transaction => {
-//     const matchesSearch = transaction.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//                          transaction.description.toLowerCase().includes(searchQuery.toLowerCase())
-//     const matchesFilter = filterType === 'all' || transaction.type === filterType
-//     return matchesSearch && matchesFilter
-//   })
-//
-//   const totalCredit = mockTransactions
-//     .filter(t => t.type === 'credit' && t.status === 'completed')
-//     .reduce((sum, t) => sum + t.amount, 0)
-//
-//   const totalDebit = mockTransactions
-//     .filter(t => t.type === 'debit' && t.status === 'completed')
-//     .reduce((sum, t) => sum + t.amount, 0)
-//
-//   const balance = totalCredit - totalDebit
-//
-//   const formatCurrency = (amount: number) => {
-//     return new Intl.NumberFormat('id-ID', {
-//       style: 'currency',
-//       currency: 'IDR',
-//       minimumFractionDigits: 0
-//     }).format(amount)
-//   }
-//
-//   const formatDate = (dateString: string) => {
-//     return new Date(dateString).toLocaleDateString('id-ID', {
-//       year: 'numeric',
-//       month: 'long',
-//       day: 'numeric'
-//     })
-//   }
-//
-//   const getStatusColor = (status: string) => {
-//     switch (status) {
-//       case 'completed':
-//         return 'text-green-600 bg-green-100'
-//       case 'pending':
-//         return 'text-yellow-600 bg-yellow-100'
-//       case 'failed':
-//         return 'text-red-600 bg-red-100'
-//       default:
-//         return 'text-gray-600 bg-gray-100'
-//     }
-//   }
-//
-//   return (
-//     <>
-//       <header className="sticky top-0 bg-white/80 backdrop-blur-sm z-10">
-//         <div className="h-16 flex items-center justify-between px-6">
-//           <h1 className="text-2xl font-bold text-gray-900">Transaction History</h1>
-//         </div>
-//       </header>
-//
-//       <main className="w-full">
-//         {/* Balance Overview Section */}
-//         <section className="mb-8 px-4 sm:px-6 lg:px-8">
-//           <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6 rounded-xl shadow-lg text-white">
-//             <div className="flex items-center space-x-3 mb-4">
-//               <div className="bg-white/20 p-3 rounded-full">
-//                 <CreditCard className="w-6 h-6" />
-//               </div>
-//               <div>
-//                 <p className="text-sm opacity-90">Current Balance</p>
-//                 <p className="text-3xl font-bold">{formatCurrency(balance)}</p>
-//               </div>
-//             </div>
-//             <div className="grid grid-cols-2 gap-4 mt-6">
-//               <div className="bg-white/10 p-4 rounded-lg">
-//                 <p className="text-xs opacity-75">Total Credit</p>
-//                 <p className="text-lg font-semibold">{formatCurrency(totalCredit)}</p>
-//               </div>
-//               <div className="bg-white/10 p-4 rounded-lg">
-//                 <p className="text-xs opacity-75">Total Debit</p>
-//                 <p className="text-lg font-semibold">{formatCurrency(totalDebit)}</p>
-//               </div>
-//             </div>
-//           </div>
-//         </section>
-//
-//         {/* Filters Section */}
-//         <section className="mb-6 px-4 sm:px-6 lg:px-8">
-//           <div className="flex flex-col sm:flex-row gap-4">
-//             {/* Search Bar */}
-//             <div className="relative flex-1">
-//               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-//               <input
-//                 type="text"
-//                 placeholder="Search transactions..."
-//                 value={searchQuery}
-//                 onChange={(e) => setSearchQuery(e.target.value)}
-//                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               />
-//             </div>
-//
-//             {/* Filter Buttons */}
-//             <div className="flex gap-2">
-//               <button
-//                 onClick={() => setFilterType('all')}
-//                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-//                   filterType === 'all'
-//                     ? 'bg-blue-600 text-white'
-//                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-//                 }`}
-//               >
-//                 All
-//               </button>
-//               <button
-//                 onClick={() => setFilterType('credit')}
-//                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-//                   filterType === 'credit'
-//                     ? 'bg-green-600 text-white'
-//                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-//                 }`}
-//               >
-//                 Credit
-//               </button>
-//               <button
-//                 onClick={() => setFilterType('debit')}
-//                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-//                   filterType === 'debit'
-//                     ? 'bg-red-600 text-white'
-//                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-//                 }`}
-//               >
-//                 Debit
-//               </button>
-//             </div>
-//           </div>
-//         </section>
-//
-//         {/* Transactions List */}
-//         <section className="px-4 sm:px-6 lg:px-8 pb-8">
-//           <div className="bg-white rounded-xl shadow-md overflow-hidden">
-//             {filteredTransactions.length === 0 ? (
-//               <div className="p-8 text-center text-gray-500">
-//                 <p>No transactions found</p>
-//               </div>
-//             ) : (
-//               <div className="divide-y divide-gray-200">
-//                 {filteredTransactions.map((transaction) => (
-//                   <div
-//                     key={transaction.id}
-//                     className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between"
-//                   >
-//                     <div className="flex items-center space-x-4">
-//                       <div
-//                         className={`p-3 rounded-full ${
-//                           transaction.type === 'credit'
-//                             ? 'bg-green-100'
-//                             : 'bg-red-100'
-//                         }`}
-//                       >
-//                         {transaction.type === 'credit' ? (
-//                           <ArrowDownLeft className="w-5 h-5 text-green-600" />
-//                         ) : (
-//                           <ArrowUpRight className="w-5 h-5 text-red-600" />
-//                         )}
-//                       </div>
-//                       <div>
-//                         <h3 className="font-semibold text-gray-900">
-//                           {transaction.title}
-//                         </h3>
-//                         <p className="text-sm text-gray-500">
-//                           {transaction.description}
-//                         </p>
-//                         <p className="text-xs text-gray-400 mt-1">
-//                           {formatDate(transaction.date)}
-//                         </p>
-//                       </div>
-//                     </div>
-//                     <div className="text-right">
-//                       <p
-//                         className={`text-lg font-bold ${
-//                           transaction.type === 'credit'
-//                             ? 'text-green-600'
-//                             : 'text-red-600'
-//                         }`}
-//                       >
-//                         {transaction.type === 'credit' ? '+' : '-'}
-//                         {formatCurrency(transaction.amount)}
-//                       </p>
-//                       <span
-//                         className={`text-xs font-medium px-2 py-1 rounded-full ${getStatusColor(
-//                           transaction.status
-//                         )}`}
-//                       >
-//                         {transaction.status}
-//                       </span>
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-//             )}
-//           </div>
-//         </section>
-//       </main>
-//     </>
-//   )
-// }
+import { Calendar, CreditCard, ShoppingBag, ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+interface Course {
+  id: string;
+  title: string;
+  thumbnail: string;
+  price: number;
+}
+
+interface Transaction {
+  id: string;
+  orderId: string;
+  courses: Course[];
+  subtotal: number;
+  total: number;
+  date: string;
+  paymentMethod: string;
+  status: "completed" | "pending" | "failed";
+}
+
+export default function TransactionHistory() {
+  const [selectedTransaction, setSelectedTransaction] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  // Mock data
+  const mockTransactions: Transaction[] = [
+    {
+      id: "1",
+      orderId: "TRX-001",
+      courses: [
+        {
+          id: "c1",
+          title: "Complete SQL and Databases Bootcamp",
+          thumbnail: "https://via.placeholder.com/80x80?text=SQL",
+          price: 149000,
+        },
+        {
+          id: "c2",
+          title: "Web Security & Bug Bounty: Learn Penetration Testing",
+          thumbnail: "https://via.placeholder.com/80x80?text=Security",
+          price: 149000,
+        },
+        {
+          id: "c3",
+          title: "Complete NodeJS Developer (GraphQL, MongoDB, + more)",
+          thumbnail: "https://via.placeholder.com/80x80?text=NodeJS",
+          price: 149000,
+        },
+        {
+          id: "c4",
+          title: "The Complete Python Developer",
+          thumbnail: "https://via.placeholder.com/80x80?text=Python",
+          price: 299000,
+        },
+      ],
+      subtotal: 746000,
+      total: 746000,
+      date: "2025-11-10",
+      paymentMethod: "Bank Transfer to Bank Permata",
+      status: "completed",
+    },
+    {
+      id: "2",
+      orderId: "TRX-002",
+      courses: [
+        {
+          id: "c5",
+          title: "React - The Complete Guide 2025",
+          thumbnail: "https://via.placeholder.com/80x80?text=React",
+          price: 199000,
+        },
+      ],
+      subtotal: 199000,
+      total: 199000,
+      date: "2025-11-08",
+      paymentMethod: "Credit Card",
+      status: "completed",
+    },
+  ];
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(amount);
+
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+  const toggleTransaction = (id: string) =>
+    setSelectedTransaction(selectedTransaction === id ? null : id);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar (disamakan dengan Explore & MyCourse) */}
+      <header className="sticky top-0 bg-white/80 backdrop-blur-sm z-10">
+        <div className="h-16 flex items-center justify-between px-6">
+          <h1 className="text-xl font-semibold text-gray-900">
+            Transaction History
+          </h1>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-4">
+          {mockTransactions.map((transaction) => (
+            <div
+              key={transaction.id}
+              className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+            >
+              {/* Transaction Header */}
+              <button
+                onClick={() => toggleTransaction(transaction.id)}
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-blue-50 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="w-4 h-4 text-blue-600" />
+                    <span>{formatDate(transaction.date)}</span>
+                  </div>
+                  <div className="h-4 w-px bg-gray-300"></div>
+                  <div className="text-sm text-gray-600 font-mono">
+                    {transaction.orderId}
+                  </div>
+                  <div className="h-4 w-px bg-gray-300"></div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {formatCurrency(transaction.total)}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      transaction.status === "completed"
+                        ? "bg-blue-50 text-blue-700"
+                        : transaction.status === "pending"
+                        ? "bg-yellow-50 text-yellow-700"
+                        : "bg-red-50 text-red-700"
+                    }`}
+                  >
+                    {transaction.status === "completed"
+                      ? "Completed"
+                      : transaction.status === "pending"
+                      ? "Pending"
+                      : "Failed"}
+                  </span>
+                  <ChevronDown
+                    className={`w-5 h-5 text-gray-400 transition-transform ${
+                      selectedTransaction === transaction.id ? "rotate-180" : ""
+                    }`}
+                  />
+                </div>
+              </button>
+
+              {/* Transaction Details */}
+              {selectedTransaction === transaction.id && (
+                <div className="border-t border-gray-200">
+                  <div className="grid lg:grid-cols-3 gap-6 p-6">
+                    {/* Left Column */}
+                    <div className="lg:col-span-2 space-y-6">
+                      <div>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">
+                          Order Details ({transaction.courses.length} Courses)
+                        </h2>
+
+                        <div className="space-y-3">
+                          {transaction.courses.map((course) => (
+                            <div key={course.id} className="flex gap-3">
+                              <img
+                                src={course.thumbnail}
+                                alt={course.title}
+                                className="w-20 h-20 object-cover rounded"
+                                onError={(e) => {
+                                  e.currentTarget.src =
+                                    "https://via.placeholder.com/80x80?text=Course";
+                                }}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+                                  {course.title}
+                                </h3>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {formatCurrency(course.price)}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Payment Method */}
+                      <div className="border-t pt-4">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                          Payment Method
+                        </h3>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <CreditCard className="w-4 h-4 text-blue-600" />
+                          <span>{transaction.paymentMethod}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column - Summary */}
+                    <div className="lg:col-span-1">
+                      <div className="bg-blue-50 rounded-lg p-6 border border-blue-100">
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">
+                          Order Summary
+                        </h2>
+
+                        <div className="space-y-3">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Subtotal:</span>
+                            <span className="font-medium text-gray-900">
+                              {formatCurrency(transaction.subtotal)}
+                            </span>
+                          </div>
+
+                          <div className="border-t border-gray-300 pt-3 flex justify-between">
+                            <span className="font-semibold text-gray-900">
+                              Total ({transaction.courses.length} courses):
+                            </span>
+                            <span className="text-xl font-bold text-blue-700">
+                              {formatCurrency(transaction.total)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* View Courses Button */}
+                        {transaction.status === "completed" && (
+                          <button
+                            onClick={() =>
+                              navigate("/dashboard/student/my-course")
+                            }
+                            className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                          >
+                            <ShoppingBag className="w-4 h-4" />
+                            View Courses
+                          </button>
+                        )}
+
+                        {transaction.status === "pending" && (
+                          <div className="mt-6 space-y-2">
+                            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
+                              Continue Payment
+                            </button>
+                            <button className="w-full bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg border border-gray-300 transition-colors">
+                              Cancel Order
+                            </button>
+                          </div>
+                        )}
+
+                        <p className="text-xs text-gray-500 mt-4 text-center">
+                          30-Day Money Back Guarantee
+                        </p>
+                        <p className="text-xs text-gray-500 text-center">
+                          Not satisfied? Get a full refund within 30 days.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {mockTransactions.length === 0 && (
+          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+            <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              No transactions yet
+            </h2>
+            <p className="text-gray-600">
+              Your purchased courses will appear here once available.
+            </p>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

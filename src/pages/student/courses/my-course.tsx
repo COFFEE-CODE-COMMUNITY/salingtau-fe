@@ -1,68 +1,39 @@
-import React, {useMemo, useState} from "react"
-import InfiniteScroll from "react-infinite-scroll-component"
-import {Search} from "lucide-react"
-import {CourseCard} from "@/components/ui/course-card.tsx"
-import {coursesData} from "@/utils/courseData.ts"
-import {Combobox} from "@/components/ui/combobox.tsx"
-import {SortByCourse} from "@/components/ui/sort-by-course.tsx"
-
-const PAGE_SIZE = 9
+import { BookOpen, GraduationCap, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Combobox } from "@/components/ui/combobox.tsx";
+import { SortByCourse } from "@/components/ui/sort-by-course.tsx";
 
 export default function MyCourse() {
-  const [sortBy, setSortBy] = useState("name")
-  const [sortOrder, setSortOrder] = useState("ascending")
+  const navigate = useNavigate();
 
-  // Sort courses based on selected criteria
-  const sortedCourses = useMemo(() => {
-    return [...coursesData].sort((a, b) => {
-      let compareValue = 0
-
-      if (sortBy === "name") {
-        compareValue = a.title.localeCompare(b.title)
-      } else if (sortBy === "price") {
-        compareValue = a.price - b.price
-      } else if (sortBy === "rating") {
-        compareValue = a.rating - b.rating
-      }
-
-      return sortOrder === "ascending" ? compareValue : -compareValue
-    })
-  }, [sortBy, sortOrder])
-
-  const [displayed, setDisplayed] = useState(
-    sortedCourses.slice(0, PAGE_SIZE)
-  )
-  const [hasMore, setHasMore] = useState(sortedCourses.length > PAGE_SIZE)
-
-  // Reset displayed courses when sort changes
-  React.useEffect(() => {
-    setDisplayed(sortedCourses.slice(0, PAGE_SIZE))
-    setHasMore(sortedCourses.length > PAGE_SIZE)
-  }, [sortedCourses])
-
-  // Fetch next chunk of data (3x3 card)
-  const fetchMoreData = () => {
-    setTimeout(() => {
-      const next = sortedCourses.slice(
-        displayed.length,
-        displayed.length + PAGE_SIZE
-      )
-      setDisplayed((prev) => [...prev, ...next])
-      if (displayed.length + PAGE_SIZE >= sortedCourses.length) {
-        setHasMore(false)
-      }
-    }, 600)
-  }
-
-  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
-    setSortBy(newSortBy)
-    setSortOrder(newSortOrder)
-  }
+  const stats = [
+    {
+      title: "Total Courses",
+      value: 0,
+      color: "bg-blue-50",
+      iconColor: "bg-blue-600",
+      icon: <BookOpen className="text-white w-5 h-5" />,
+    },
+    {
+      title: "In Progress",
+      value: 0,
+      color: "bg-green-50",
+      iconColor: "bg-green-600",
+      icon: <GraduationCap className="text-white w-5 h-5" />,
+    },
+    {
+      title: "Completed",
+      value: 0,
+      color: "bg-purple-50",
+      iconColor: "bg-purple-600",
+      icon: <GraduationCap className="text-white w-5 h-5" />,
+    },
+  ];
 
   return (
     <>
-      {/* Header */}
-      <header className="sticky top-0 bg-white/80 backdrop-blur-sm z-10">
+      {/* Header / Navbar seperti ExploreCourse */}
+      <header className="sticky top-0 bg-white/80 backdrop-blur-sm z-10 border-b">
         <div className="h-16 flex items-center justify-between px-6">
           <h2 className="text-xl font-semibold text-gray-900">My Courses</h2>
           <div className="flex items-center gap-2 ml-auto">
@@ -70,40 +41,60 @@ export default function MyCourse() {
               <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search anything..."
+                placeholder="Search my courses..."
                 className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition"
               />
             </div>
             <Combobox />
-            <SortByCourse onSortChange={handleSortChange} />
+            <SortByCourse
+              onSortChange={() => {
+                /* opsional: bisa tambahkan sorting di sini nanti */
+              }}
+            />
           </div>
         </div>
       </header>
 
       {/* Body */}
       <div className="p-8">
-        <h3 className="text-2xl font-bold text-gray-900 mb-4">
-          My Courses
-        </h3>
-        {/* Infinite Scroll Area */}
-        <InfiniteScroll
-          dataLength={displayed.length}
-          next={fetchMoreData}
-          hasMore={hasMore}
-          loader={<p className="text-center py-4">Loading...</p>}
-          endMessage={
-            <p className="text-center py-6 text-gray-500">
-              Semua course sudah ditampilkan.
-            </p>
-          }
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayed.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
-          </div>
-        </InfiniteScroll>
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          {stats.map((item, index) => (
+            <div
+              key={index}
+              className={`${item.color} rounded-xl border border-gray-200 p-5 flex items-center gap-4`}
+            >
+              <div className={`${item.iconColor} p-3 rounded-lg`}>
+                {item.icon}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700">
+                  {item.title}
+                </p>
+                <p className="text-2xl font-bold text-gray-900">{item.value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        <div className="border border-gray-200 rounded-xl py-16 flex flex-col items-center justify-center text-center bg-white">
+          <BookOpen className="w-12 h-12 text-gray-400 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-800 mb-1">
+            No Courses Yet
+          </h3>
+          <p className="text-gray-500 text-sm mb-6 max-w-md">
+            You haven’t enrolled in any courses yet. Start learning by exploring available courses.
+          </p>
+          <button
+            onClick={() => navigate("/dashboard/student/explore")}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition"
+          >
+            <Search className="w-5 h-5" />
+            Explore Courses
+          </button>
+        </div>
       </div>
     </>
-  )
+  );
 }
