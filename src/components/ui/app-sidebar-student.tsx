@@ -24,7 +24,6 @@ export function AppSidebarStudent({ ...props }: React.ComponentProps<typeof Side
   const userMenuItems = React.useMemo(() => {
     const baseItems = [
       { title: "Profile", url: "/dashboard/student/profile" },
-      { title: "Account", url: "/dashboard/student/account" },
     ];
 
     // Tambahkan "Apply as instructor" hanya jika user roles panjangnya tidak lebih dari 1

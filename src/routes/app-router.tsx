@@ -22,8 +22,8 @@ import TransactionHistory from "@/pages/student/transactions/transaction-history
 import BuyCourse from "@/pages/student/courses/buy-course.tsx";
 
 // Instructor pages
-import InstructorDashboard from "@/pages/instructor/instructor-dashboard.tsx";
-import InstructorCreateCourse from "@/pages/instructor/instructor-createcourse.tsx";
+import InstructorDashboard from "@/pages/instructor/dashboard/instructor-dashboard.tsx";
+import InstructorCreateCourse from "@/pages/instructor/courses/instructor-createcourse.tsx";
 
 // Route protection
 import { InstructorRoute, StudentRoute } from "@/utils/protected-routes.tsx";

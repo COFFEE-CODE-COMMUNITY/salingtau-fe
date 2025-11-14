@@ -12,12 +12,11 @@ import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Home,
   Book,
-  TrendingUp,
 } from "lucide-react";
 
 export const instructorNavData = [
   {
-    title: "Home",
+    title: "Dashboard",
     url: "/dashboard/instructor",
     icon: Home,
   },
@@ -25,15 +24,6 @@ export const instructorNavData = [
     title: "Course",
     url: "/dashboard/instructor/course",
     icon: Book,
-  },
-  {
-    title: "Performance",
-    url: "#",
-    icon: TrendingUp,
-    items: [
-      { title: "Revenue", url: "/dashboard/instructor/revenue" },
-      { title: "Rating", url: "/dashboard/instructor/rating" },
-    ],
   },
 ];
 

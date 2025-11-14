@@ -17,8 +17,11 @@ import { coursesData } from "@/utils/courseData.ts";
 import CourseReviewsSection from "@/components/ui/course-review-section.tsx";
 import { sampleRatingDistribution, sampleReviews } from "@/utils/reviewData.ts";
 import CircularProgressBar from "@/components/ui/circular-progress-bar.tsx";
+import api from "@/services/api.ts";
+import { useUser } from "@/utils/user-context.tsx";
+import type { CreateTransactionDto, CreateTransactionResponseDto } from "@/types/transaction.types";
+import { validateTransactionData } from "@/utils/validation";
 
-// Helper function untuk konversi detik ke format MM:SS
 const formatDuration = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -33,10 +36,12 @@ const calculateProgress = (watchedDuration: number, totalDuration: number): numb
 
 const CourseDetailPage = () => {
   const { courseId } = useParams<{ courseId: string }>();
-  const navigate = useNavigate(); // ✅ Tambah hook navigasi
+  const navigate = useNavigate();
+  const { user } = useUser();
   const [courseData, setCourseData] = useState<any | null>(null);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   useEffect(() => {
     if (courseId) {
@@ -46,6 +51,19 @@ const CourseDetailPage = () => {
       if (foundCourse?.sections?.[0]) {
         setExpandedSections([foundCourse.sections[0].id]);
       }
+    }
+
+    const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js"
+    const clientKey = "Mid-client-exZEx6snQpPP_ffB"
+    const script = document.createElement("script")
+    script.src = snapScript
+    script.setAttribute('data-client-key', clientKey)
+    script.async = true
+
+    document.body.appendChild(script)
+
+    return () => {
+      document.body.removeChild(script)
     }
   }, [courseId]);
 
@@ -62,6 +80,74 @@ const CourseDetailPage = () => {
       setExpandedSections(courseData.sections.map((s: any) => s.id));
     }
   };
+
+  const checkout = async () => {
+    if (!user?.id || !courseId || !courseData) {
+      console.error("Missing required data for checkout");
+      alert("Unable to proceed with checkout. Please try again.");
+      return;
+    }
+
+    setIsCheckingOut(true);
+
+    try {
+      // Prepare data sesuai CreateTransactionDto
+      const requestData: CreateTransactionDto = {
+        userId: user.id,
+        courseId: courseId,
+        amount: 1,
+        currency: "IDR"
+      };
+
+      // Validate data sesuai dengan backend DTO validation
+      const validation = validateTransactionData(requestData);
+      if (!validation.isValid) {
+        console.error("Validation failed:", validation.error);
+        alert(validation.error || "Invalid transaction data");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      // Send request ke backend
+      const res = await api.post<CreateTransactionResponseDto>("/transaction/token", requestData, {
+        withCredentials: true
+      });
+
+      // Response structure: { transactionId, snapToken, redirectUrl }
+      const { snapToken, redirectUrl } = res.data;
+
+      // Open Midtrans Snap payment page
+      if (window.snap) {
+        window.snap.pay(snapToken, {
+          onSuccess: function(result: any) {
+            console.log("Payment success:", result);
+            // Redirect ke halaman sukses atau my-course
+            navigate("/dashboard/student/my-course");
+          },
+          onPending: function(result: any) {
+            console.log("Payment pending:", result);
+            // Redirect ke halaman history untuk cek status
+            navigate("/dashboard/student/history");
+          },
+          onError: function(result: any) {
+            console.error("Payment error:", result);
+            alert("Payment failed. Please try again.");
+          },
+          onClose: function() {
+            console.log("Payment popup closed");
+            setIsCheckingOut(false);
+          }
+        });
+      } else {
+        // Fallback: redirect to Midtrans payment page
+        window.location.href = redirectUrl;
+      }
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      alert(error.response?.data?.message || "Failed to process checkout. Please try again.");
+      setIsCheckingOut(false);
+    }
+  }
 
   const getLectureIcon = (type: string) => {
     switch (type) {
@@ -271,18 +357,19 @@ const CourseDetailPage = () => {
                 )}
               </div>
 
-              {/* ✅ Tombol sudah berfungsi navigasi ke BuyCourse */}
+              {/* ✅ Tombol Checkout dengan Midtrans Snap */}
               <button
                 onClick={() => {
                   if (courseData.price === 0) {
                     alert("Kursus gratis — langsung terdaftar!");
                   } else {
-                    navigate(`/dashboard/student/buy/${courseData.id}`);
+                    checkout();
                   }
                 }}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium mb-3"
+                disabled={isCheckingOut}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium mb-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {courseData.price === 0 ? "Enroll Now" : "Buy Now"}
+                {isCheckingOut ? "Processing..." : (courseData.price === 0 ? "Enroll Now" : "Buy Now")}
               </button>
 
               <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
