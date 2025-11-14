@@ -33,7 +33,6 @@ export interface CourseDetail extends Course {
   totalSections?: number
   totalLectures?: number
   totalDuration?: number
-  language?: string
   requirements?: string[]
   whatYouWillLearn?: string[]
   targetAudience?: string[]
