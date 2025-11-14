@@ -1,20 +1,19 @@
-import React, {useMemo, useState} from "react"
-import InfiniteScroll from "react-infinite-scroll-component"
+import {useMemo, useState} from "react"
 import {Search} from "lucide-react"
 import {CourseCard} from "@/components/ui/course-card.tsx"
-import {coursesData} from "@/utils/courseData.ts"
 import {Combobox} from "@/components/ui/combobox.tsx"
 import {SortByCourse} from "@/components/ui/sort-by-course.tsx"
-
-const PAGE_SIZE = 9
+import {useExploreCourses} from "@/services/exploreCourse.ts"
 
 export default function ExploreCourse() {
   const [sortBy, setSortBy] = useState("name")
   const [sortOrder, setSortOrder] = useState("ascending")
 
+  const { courses, loading, error } = useExploreCourses()
+
   // Sort courses based on selected criteria
   const sortedCourses = useMemo(() => {
-    return [...coursesData].sort((a, b) => {
+    return [...courses].sort((a, b) => {
       let compareValue = 0
 
       if (sortBy === "name") {
@@ -22,37 +21,12 @@ export default function ExploreCourse() {
       } else if (sortBy === "price") {
         compareValue = a.price - b.price
       } else if (sortBy === "rating") {
-        compareValue = a.rating - b.rating
+        compareValue = a.averageRating - b.averageRating
       }
 
       return sortOrder === "ascending" ? compareValue : -compareValue
     })
-  }, [sortBy, sortOrder])
-
-  const [displayed, setDisplayed] = useState(
-    sortedCourses.slice(0, PAGE_SIZE)
-  )
-  const [hasMore, setHasMore] = useState(sortedCourses.length > PAGE_SIZE)
-
-  // Reset displayed courses when sort changes
-  React.useEffect(() => {
-    setDisplayed(sortedCourses.slice(0, PAGE_SIZE))
-    setHasMore(sortedCourses.length > PAGE_SIZE)
-  }, [sortedCourses])
-
-  // Fetch next chunk of data (3x3 card)
-  const fetchMoreData = () => {
-    setTimeout(() => {
-      const next = sortedCourses.slice(
-        displayed.length,
-        displayed.length + PAGE_SIZE
-      )
-      setDisplayed((prev) => [...prev, ...next])
-      if (displayed.length + PAGE_SIZE >= sortedCourses.length) {
-        setHasMore(false)
-      }
-    }, 600)
-  }
+  }, [courses, sortBy, sortOrder])
 
   const handleSortChange = (newSortBy: string, newSortOrder: string) => {
     setSortBy(newSortBy)
@@ -85,24 +59,36 @@ export default function ExploreCourse() {
         <h3 className="text-2xl font-bold text-gray-900 mb-4">
           Explore Courses
         </h3>
-        {/* Infinite Scroll Area */}
-        <InfiniteScroll
-          dataLength={displayed.length}
-          next={fetchMoreData}
-          hasMore={hasMore}
-          loader={<p className="text-center py-4">Loading...</p>}
-          endMessage={
-            <p className="text-center py-6 text-gray-500">
-              Semua course sudah ditampilkan.
-            </p>
-          }
-        >
+        
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-6 text-red-500">
+            Error: {error}
+          </div>
+        )}
+        
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-6">
+            <p>Loading courses...</p>
+          </div>
+        )}
+        
+        {/* Courses Grid */}
+        {!loading && !error && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayed.map((course) => (
+            {sortedCourses.map((course) => (
               <CourseCard key={course.id} course={course} />
             ))}
           </div>
-        </InfiniteScroll>
+        )}
+        
+        {/* Empty State */}
+        {!loading && !error && sortedCourses.length === 0 && (
+          <div className="text-center py-6 text-gray-500">
+            No courses available.
+          </div>
+        )}
       </div>
     </>
   )

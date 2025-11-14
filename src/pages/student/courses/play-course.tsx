@@ -1,14 +1,13 @@
-import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useRef, useState, type JSXElementConstructor, type Key, type ReactElement, type ReactNode, type ReactPortal} from "react";
+import {useParams} from "react-router-dom";
 import videojs from "video.js";
 import 'videojs-youtube';
 import "video.js/dist/video-js.css";
-import { Code, FileText, PlayCircle, ExternalLink, Clock } from "lucide-react";
-import type { CourseDetail } from "@/utils/courseData.ts";
-import { coursesData } from "@/utils/courseData.ts";
+import {Code, FileText, PlayCircle, ExternalLink, Clock} from "lucide-react";
+import {coursesData} from "@/utils/courseData.ts";
 import Article from "./article.tsx";
-import { FileDownloadDialog } from "@/components/ui/file-download-dialog.tsx";
-import { ExternalLinkDialog } from "@/components/ui/external-link-dialog.tsx";
+import {FileDownloadDialog} from "@/components/ui/file-download-dialog.tsx";
+import {ExternalLinkDialog} from "@/components/ui/external-link-dialog.tsx";
 import {
   Accordion,
   AccordionContent,
@@ -17,13 +16,13 @@ import {
 } from "@/components/ui/accordion.tsx";
 
 const PlayCourse = () => {
-  const { courseId } = useParams<{ courseId: string }>();
-  const [course, setCourse] = useState<CourseDetail | null>(null);
+  const {courseId} = useParams<{ courseId: string }>();
+  const [course, setCourse] = useState<any | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState<{
     type: 'file' | 'external' | null;
     lessonId: string | null;
-  }>({ type: null, lessonId: null });
+  }>({type: null, lessonId: null});
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<any>(null);
@@ -120,8 +119,8 @@ const PlayCourse = () => {
   }, []);
 
   useEffect(() => {
-    const allLessons = course?.sections.flatMap((s) => s.lectures) || [];
-    const activeLesson = allLessons.find((l) => l.id === activeLessonId);
+    const allLessons = course?.sections.flatMap((s: { lectures: any; }) => s.lectures) || [];
+    const activeLesson = allLessons.find((l: { id: string | null; }) => l.id === activeLessonId);
 
     if (playerRef.current && activeLesson?.type === "video" && activeLessonId) {
       const videoUrl = videoSources[activeLessonId];
@@ -162,11 +161,11 @@ const PlayCourse = () => {
     if (lessonType === "file") {
       console.log("Setting file dialog...");
       console.log("File data:", fileLectures[lessonId]);
-      setOpenDialog({ type: 'file', lessonId });
+      setOpenDialog({type: 'file', lessonId});
     } else if (lessonType === "external") {
       console.log("Setting external dialog...");
       console.log("External data:", externalLectures[lessonId]);
-      setOpenDialog({ type: 'external', lessonId });
+      setOpenDialog({type: 'external', lessonId});
     } else {
       setActiveLessonId(lessonId);
     }
@@ -181,34 +180,34 @@ const PlayCourse = () => {
     return <div className="p-10 text-gray-600">Course not found.</div>;
   }
 
-  const allLessons = course.sections.flatMap((s) => s.lectures);
-  const activeLesson = allLessons.find((l) => l.id === activeLessonId);
+  const allLessons = course.sections.flatMap((s: { lectures: any; }) => s.lectures);
+  const activeLesson = allLessons.find((l: { id: string | null; }) => l.id === activeLessonId);
 
   const getLessonIcon = (type: string) => {
     switch (type) {
       case "video":
-        return <PlayCircle className="w-5 h-5" />;
+        return <PlayCircle className="w-5 h-5"/>;
       case "file":
-        return <FileText className="w-5 h-5" />;
+        return <FileText className="w-5 h-5"/>;
       case "article":
-        return <Code className="w-5 h-5" />;
+        return <Code className="w-5 h-5"/>;
       case "external":
-        return <ExternalLink className="w-5 h-5" />;
+        return <ExternalLink className="w-5 h-5"/>;
       default:
-        return <PlayCircle className="w-5 h-5" />;
+        return <PlayCircle className="w-5 h-5"/>;
     }
   };
 
-  const getSectionStats = (sectionId: string) => {
-    const section = course.sections.find(s => s.id === sectionId);
-    if (!section) return { lectureCount: 0, totalDuration: 0 };
+  const getSectionStats = (sectionId: React.Key | null | undefined) => {
+    const section = course.sections.find((s: { id: string; }) => s.id === sectionId);
+    if (!section) return {lectureCount: 0, totalDuration: 0};
 
     const lectureCount = section.lectures.length;
     const totalDuration = section.lectures
-      .filter(l => l.type === "video")
-      .reduce((sum, l) => sum + (l.duration || 0), 0);
+      .filter((l: { type: string; }) => l.type === "video")
+      .reduce((sum: any, l: { duration: any; }) => sum + (l.duration || 0), 0);
 
-    return { lectureCount, totalDuration };
+    return {lectureCount, totalDuration};
   };
 
   const formatDuration = (seconds: number) => {
@@ -242,7 +241,7 @@ const PlayCourse = () => {
       {/* Main Content */}
       <div className="flex-1 bg-white">
         {activeLesson?.type === "article" ? (
-          <Article title={activeLesson.title} />
+          <Article title={activeLesson.title}/>
         ) : (
           <>
             <div className="relative w-full bg-black aspect-video">
@@ -282,7 +281,8 @@ const PlayCourse = () => {
                   <div className="text-sm text-gray-500">Instructor</div>
                 </div>
               </div>
-              <button className="px-7 py-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                className="px-7 py-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
                 Done & Continue
               </button>
             </div>
@@ -298,12 +298,12 @@ const PlayCourse = () => {
           </h2>
         </div>
 
-        <Accordion type="multiple" defaultValue={course.sections.map(s => s.id)} className="w-full">
-          {course.sections.map((section) => {
+        <Accordion type="multiple" defaultValue={course.sections.map((s: { id: any; }) => s.id)} className="w-full">
+          {course.sections.map((section: { id: Key | null | undefined; title: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; lectures: any[]; }) => {
             const stats = getSectionStats(section.id);
 
             return (
-              <AccordionItem key={section.id} value={section.id} className="border-b">
+              <AccordionItem key={section.id} value={String(section?.id ?? "")} className="border-b">
                 <AccordionTrigger className="px-6 py-4 hover:bg-gray-100 hover:no-underline">
                   <div className="flex flex-col items-start text-left w-full">
                     <h3 className="text-sm font-semibold text-gray-900">

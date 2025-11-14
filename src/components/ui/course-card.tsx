@@ -1,15 +1,8 @@
 import { Link } from "react-router-dom";
 import { StarRating } from "@/components/ui/star-rating.tsx";
-export type Course = {
-  id: string,
-  image: string,
-  category: string,
-  title: string,
-  rating: number,
-  totalRatings: number,
-  creator: string,
-  price: number,
-}
+import type { Course } from "@/services/exploreCourse.ts";
+
+export type { Course };
 
 function formatPrice(price: number): string {
   return price === 0
@@ -33,6 +26,9 @@ function CategoryColor(categoryName: string): string {
 }
 
 export const CourseCard = ({ course }: { course: Course }) => {
+  const instructorName = `${course.instructor.firstName} ${course.instructor.lastName}`;
+  const categoryName = course.category?.name || "Uncategorized";
+  
   return (
     <Link
       to={`/dashboard/student/course/${course.id}`}
@@ -41,7 +37,7 @@ export const CourseCard = ({ course }: { course: Course }) => {
       <div className="relative">
         <img
           className="h-40 w-full object-cover"
-          src={course.image}
+          src={course.thumbnail?.url || "/placeholder-course.jpg"}
           alt={course.title}
         />
         {/* Price Badge */}
@@ -51,24 +47,24 @@ export const CourseCard = ({ course }: { course: Course }) => {
       </div>
 
       <div className="p-5">
-        <span className={CategoryColor(course.category)}>
-          {course.category}
+        <span className={CategoryColor(categoryName)}>
+          {categoryName}
         </span>
         <h3 className="mt-3 text-lg font-semibold text-gray-900 truncate">
           {course.title}
         </h3>
-        <p className="mt-1 text-sm text-gray-500">by {course.creator}</p>
+        <p className="mt-1 text-sm text-gray-500">by {instructorName}</p>
 
         {/* Rating - Horizontal Layout */}
         <div className="flex items-center mt-3 gap-2">
           <StarRating
-            initialRating={course.rating}
+            initialRating={course.averageRating}
             readonly={true}
             size={16}
             showRatingText={true}
           />
           <span className="text-sm text-gray-500">
-            ({course.totalRatings.toLocaleString()})
+            ({course.totalReviews.toLocaleString()})
           </span>
         </div>
       </div>

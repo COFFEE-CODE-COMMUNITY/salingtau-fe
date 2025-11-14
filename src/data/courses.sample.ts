@@ -2,7 +2,6 @@ import {
   CourseLevel,
   CourseStatus,
   LectureType,
-  type Course,
   type CourseDetailDisplay
 } from "@/types/course.types";
 

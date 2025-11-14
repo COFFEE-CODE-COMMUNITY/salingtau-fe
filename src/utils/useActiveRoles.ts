@@ -44,8 +44,8 @@ export const useUserStore = create<UserStore>()(
 
       setActiveRole: (role) => {
         const { roles } = get();
-        if (roles.includes(role)) {
-          set({ activeRole: role });
+        if (roles.includes(role as UserRole)) {
+          set({ activeRole: role as UserRole });
         } else {
           console.warn(`[useUserStore] Tried to set invalid role: ${role}`);
         }

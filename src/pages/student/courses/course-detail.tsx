@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom"; // ✅ Tambah useNavigate
+import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
   ChevronUp,
   Star,
-  Users,
   Tag,
   PlayCircle,
   FileText,
@@ -13,7 +12,6 @@ import {
   Clock,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { coursesData } from "@/utils/courseData.ts";
 import CourseReviewsSection from "@/components/ui/course-review-section.tsx";
 import { sampleRatingDistribution, sampleReviews } from "@/utils/reviewData.ts";
 import CircularProgressBar from "@/components/ui/circular-progress-bar.tsx";
@@ -21,6 +19,7 @@ import api from "@/services/api.ts";
 import { useUser } from "@/utils/user-context.tsx";
 import type { CreateTransactionDto, CreateTransactionResponseDto } from "@/types/transaction.types";
 import { validateTransactionData } from "@/utils/validation";
+import { useCourseDetail } from "@/services/courseDetail.ts";
 
 const formatDuration = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
@@ -38,20 +37,19 @@ const CourseDetailPage = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const { user } = useUser();
-  const [courseData, setCourseData] = useState<any | null>(null);
+  const { course: courseData, loading, error } = useCourseDetail(courseId);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   useEffect(() => {
-    if (courseId) {
-      const foundCourse = coursesData.find((c) => c.id === courseId);
-      setCourseData(foundCourse || null);
-      // Auto expand first section
-      if (foundCourse?.sections?.[0]) {
-        setExpandedSections([foundCourse.sections[0].id]);
-      }
+    // Auto expand first section when course data is loaded
+    if (courseData?.sections?.[0]) {
+      setExpandedSections([courseData.sections[0].id]);
     }
+  }, [courseData])
+
+  useEffect(() => {
 
     const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js"
     const clientKey = "Mid-client-exZEx6snQpPP_ffB"
@@ -65,7 +63,7 @@ const CourseDetailPage = () => {
     return () => {
       document.body.removeChild(script)
     }
-  }, [courseId]);
+  }, []);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) =>
@@ -162,10 +160,29 @@ const CourseDetailPage = () => {
     }
   };
 
-  if (!courseData) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <p className="text-gray-600 text-lg">Loading course details...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 text-lg mb-2">Error loading course</p>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!courseData) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-gray-600 text-lg">Course not found</p>
       </div>
     );
   }
@@ -175,7 +192,7 @@ const CourseDetailPage = () => {
       {/* Hero Section */}
       <div className="relative h-96 bg-gray-900">
         <img
-          src={courseData.image}
+          src={courseData.thumbnail?.url || "/placeholder-course.jpg"}
           alt={courseData.title}
           className="w-full h-full object-cover opacity-40"
         />
@@ -193,26 +210,24 @@ const CourseDetailPage = () => {
               <div className="flex flex-wrap items-center gap-4 text-sm mb-4">
                 <div className="flex items-center gap-1">
                   <Star className="text-yellow-400 fill-yellow-400" size={18} />
-                  <span className="font-semibold">{courseData.rating}</span>
-                  <span className="text-gray-500">({courseData.totalRatings} ratings)</span>
-                </div>
-                <div className="flex items-center gap-1 text-gray-600">
-                  <Users size={18} />
-                  <span>{courseData.totalStudents || 0} students</span>
+                  <span className="font-semibold">{courseData.averageRating}</span>
+                  <span className="text-gray-500">({courseData.totalReviews} ratings)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <img
-                    src={courseData.instructor.avatar || "/fallback-avatar.jpg"}
-                    alt={courseData.instructor.name}
+                    src={courseData.instructor.profilePictures?.[0]?.url || "/fallback-avatar.jpg"}
+                    alt={`${courseData.instructor.firstName} ${courseData.instructor.lastName}`}
                     className="w-6 h-6 rounded-full"
                   />
-                  <span className="text-gray-700">{courseData.instructor.name}</span>
+                  <span className="text-gray-700">
+                    {courseData.instructor.firstName} {courseData.instructor.lastName}
+                  </span>
                 </div>
               </div>
 
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
                 <Tag size={14} />
-                {courseData.category}
+                {courseData.category?.name || "Uncategorized"}
               </div>
             </div>
 
@@ -266,11 +281,11 @@ const CourseDetailPage = () => {
               </div>
 
               <div className="text-sm text-gray-600 mb-4">
-                {courseData.sections.length} sections • {courseData.totalDuration} total length
+                {courseData.sections?.length || 0} sections • {courseData.totalDuration || "N/A"} total length
               </div>
 
               <div className="space-y-2">
-                {courseData.sections.map((section: any) => (
+                {courseData.sections?.map((section: any) => (
                   <div key={section.id} className="border border-gray-200 rounded-lg overflow-hidden">
                     <button
                       onClick={() => toggleSection(section.id)}
@@ -285,13 +300,13 @@ const CourseDetailPage = () => {
                         <span className="font-medium text-gray-900">{section.title}</span>
                       </div>
                       <span className="text-sm text-gray-500">
-                        {section.lectures.length} lectures
+                        {section.lectures?.length || 0} lectures
                       </span>
                     </button>
 
                     {expandedSections.includes(section.id) && (
                       <div className="bg-white">
-                        {section.lectures.map((lecture: any) => {
+                        {section.lectures?.map((lecture: any) => {
                           const progress = calculateProgress(
                             lecture.watchedDuration,
                             lecture.duration
@@ -333,8 +348,8 @@ const CourseDetailPage = () => {
 
             {/* Student Reviews */}
             <CourseReviewsSection
-              averageRating={courseData.rating}
-              totalRatings={courseData.totalRatings}
+              averageRating={courseData.averageRating}
+              totalRatings={courseData.totalReviews}
               ratingDistribution={sampleRatingDistribution}
               reviews={sampleReviews}
             />
@@ -344,7 +359,7 @@ const CourseDetailPage = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-lg p-6 sticky top-4">
               <img
-                src={courseData.image}
+                src={courseData.thumbnail?.url || "/placeholder-course.jpg"}
                 alt={courseData.title}
                 className="w-full h-48 object-cover rounded-lg mb-4"
               />
@@ -378,23 +393,14 @@ const CourseDetailPage = () => {
                     <Clock size={16} />
                     Duration
                   </span>
-                  <span className="font-medium text-gray-900">{courseData.totalDuration}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 flex items-center gap-2">
-                    <Users size={16} />
-                    Enrolled
-                  </span>
-                  <span className="font-medium text-gray-900">
-                    {courseData.totalStudents || 0} students
-                  </span>
+                  <span className="font-medium text-gray-900">{courseData.totalDuration || "N/A"}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600 flex items-center gap-2">
                     <Star size={16} />
                     Rating
                   </span>
-                  <span className="font-medium text-gray-900">{courseData.rating} / 5.0</span>
+                  <span className="font-medium text-gray-900">{courseData.averageRating} / 5.0</span>
                 </div>
               </div>
 
@@ -403,13 +409,15 @@ const CourseDetailPage = () => {
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Instructor</h3>
                 <div className="flex items-start gap-3">
                   <img
-                    src={courseData.instructor.avatar || "/fallback-avatar.jpg"}
-                    alt={courseData.instructor.name}
+                    src={courseData.instructor.profilePictures?.[0]?.url || "/fallback-avatar.jpg"}
+                    alt={`${courseData.instructor.firstName} ${courseData.instructor.lastName}`}
                     className="w-12 h-12 rounded-full"
                   />
                   <div>
-                    <p className="font-medium text-gray-900">{courseData.instructor.name}</p>
-                    <p className="text-xs text-gray-600 mt-1">{courseData.instructor.bio}</p>
+                    <p className="font-medium text-gray-900">
+                      {courseData.instructor.firstName} {courseData.instructor.lastName}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">{courseData.instructor.headline}</p>
                   </div>
                 </div>
               </div>

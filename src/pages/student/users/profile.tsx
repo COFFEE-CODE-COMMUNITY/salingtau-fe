@@ -128,8 +128,8 @@ const UserProfilePage = () => {
       const payload: Record<string, string | null> = {}
 
       editableFields.forEach((field) => {
-        const original = user[field] ?? ''
-        const updated = formData[field] ?? ''
+        const original = (user as any)[field] ?? ''
+        const updated = (formData as any)[field] ?? ''
 
         if (original !== updated) {
           payload[field] = updated === '' ? null : updated
