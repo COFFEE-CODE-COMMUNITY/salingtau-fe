@@ -9,9 +9,6 @@ import ChangePassword from "@/pages/auth/change-password.tsx";
 
 // Layout
 import { Layout } from "@/components/ui/layout.tsx";
-
-// Student pages
-import StudentHomepage from "@/pages/student/dashboard/student-homepage.tsx";
 import ExploreCourse from "@/pages/student/courses/explore-course.tsx";
 import MyCourse from "@/pages/student/courses/my-course.tsx";
 import ApplyAsInstructor from "@/pages/student/users/apply-as-instructor.tsx";
@@ -42,8 +39,7 @@ export function AppRouter() {
         {/* ---------- STUDENT ROUTES ---------- */}
         <Route element={<StudentRoute />}>
           <Route path="/dashboard/student" element={<Layout />}>
-            <Route index element={<StudentHomepage />} />
-            <Route path="my-course" element={<MyCourse />} />
+            <Route index element={<MyCourse />} />
             <Route path="explore" element={<ExploreCourse />} />
             <Route path="apply-as-instructor" element={<ApplyAsInstructor />} />
             <Route path="profile" element={<Profile />} />

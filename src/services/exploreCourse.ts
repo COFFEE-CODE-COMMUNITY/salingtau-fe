@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import api from "./api"
+import {useUser} from "@/utils/user-context.tsx";
 
 // Types
 export interface Thumbnail {
@@ -70,14 +71,18 @@ interface CoursesResponse {
 }
 
 // Service functions
-export const getCourses = async (): Promise<CoursesResponse> => {
-  const response = await api.get("/courses", {
+export const getCourses = async (userId: string): Promise<CoursesResponse> => {
+  const response = await api.get("/transaction/student", {
     params: {
+      userId: userId,
+      purchased: false,
       limit: 50, // Fetch all courses
       offset: 0
     }
   })
-  
+
+  console.log("response", response)
+
   if (response.status !== 200) {
     throw new Error(response.data?.message || "Failed to fetch courses")
   }
@@ -91,13 +96,14 @@ export const useExploreCourses = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [total, setTotal] = useState(0)
+  const {user} = useUser()
 
   const fetchCourses = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const response = await getCourses()
+      const response = await getCourses(user!.id)
       
       // Filter out null values
       const validCourses = response.data.filter((course): course is Course => course !== null)

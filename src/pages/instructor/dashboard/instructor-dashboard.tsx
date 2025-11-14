@@ -3,13 +3,80 @@ import { useUser } from "@/utils/user-context.tsx"
 import {
   RecentTransactionsChart,
   RevenueChart,
-} from "@/components/ui/charts.tsx";
+} from "@/components/ui/charts.tsx"
+import { useEffect, useState } from 'react'
+import api from '@/services/api'
+
+interface Transaction {
+  id: string
+  amount: number
+  currency: string
+  paymentGateway: string
+  transactionId?: string
+  status: string
+  paymentDetails?: Record<string, any>
+  createdAt: string
+  updatedAt: string
+  user: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string
+  }
+  course: {
+    id: string
+    title: string
+    slug: string
+    price: number
+    thumbnail?: {
+      url: string
+    }
+  }
+}
+
+interface DashboardStats {
+  totalRevenue: number
+  revenueGrowth: number
+  totalStudents: number
+  studentGrowth: number
+  publishedCourses: number
+  pendingCourses: number
+  totalCourses: number
+  averageRating: number
+  ratingChange: number
+  totalReviews: number
+  totalEnrollments: number
+}
+
+interface RevenueChartData {
+  month: string
+  revenue: number
+  students: number
+}
 
 export default function InstructorDashboard() {
   const { user } = useUser()
   const name = user ? user.firstName : "Instructor"
 
-  // ✨ 10 random motivational messages for instructors
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [stats, setStats] = useState<DashboardStats>({
+    totalRevenue: 0,
+    revenueGrowth: 0,
+    totalStudents: 0,
+    studentGrowth: 0,
+    publishedCourses: 0,
+    pendingCourses: 0,
+    totalCourses: 0,
+    averageRating: 0,
+    ratingChange: 0,
+    totalReviews: 0,
+    totalEnrollments: 0,
+  })
+  const [revenueData, setRevenueData] = useState<RevenueChartData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Motivational messages
   const messages = [
     "Your teaching creates endless ripples.",
     "Sharing knowledge is the best way to grow it.",
@@ -24,6 +91,164 @@ export default function InstructorDashboard() {
   ]
 
   const randomMessage = messages[Math.floor(Math.random() * messages.length)]
+
+  useEffect(() => {
+    const fetchTransactionHistory = async () => {
+      if (!user?.id) return
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        const response = await api.get(`/transaction/instructor/${user.id}/history`)
+
+        if (response.status === 200 && response.data) {
+          const transactionsData: Transaction[] = response.data
+          setTransactions(transactionsData)
+
+          // Process data untuk statistics
+          processStatistics(transactionsData)
+
+          // Process data untuk revenue chart
+          processRevenueChart(transactionsData)
+        } else {
+          throw new Error('Failed to fetch transaction history')
+        }
+      } catch (err) {
+        console.error('Error fetching transaction history:', err)
+        setError('Failed to load dashboard data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTransactionHistory()
+  }, [user?.id])
+
+  const processStatistics = (transactionsData: Transaction[]) => {
+    // Filter hanya transaksi yang sukses
+    const completedTransactions = transactionsData.filter(
+      t => t.status === 'SUCCESS' || t.status === 'COMPLETED' || t.status === 'completed'
+    )
+
+    // Total Revenue (dalam Rupiah, asumsi currency IDR)
+    const totalRevenue = completedTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
+
+    // Unique students
+    const uniqueStudents = new Set(completedTransactions.map(t => t.user.id))
+    const totalStudents = uniqueStudents.size
+
+    // Unique courses
+    const uniqueCourses = new Set(completedTransactions.map(t => t.course.id))
+    const totalEnrollments = completedTransactions.length
+
+    // Calculate growth (compare last 30 days vs previous 30 days)
+    const now = new Date()
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+
+    const recentTransactions = completedTransactions.filter(
+      t => new Date(t.createdAt) >= thirtyDaysAgo
+    )
+    const previousTransactions = completedTransactions.filter(
+      t => new Date(t.createdAt) >= sixtyDaysAgo && new Date(t.createdAt) < thirtyDaysAgo
+    )
+
+    const recentRevenue = recentTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
+    const previousRevenue = previousTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
+
+    const revenueGrowth = previousRevenue > 0
+      ? ((recentRevenue - previousRevenue) / previousRevenue) * 100
+      : 0
+
+    const recentStudents = new Set(recentTransactions.map(t => t.user.id)).size
+    const previousStudents = new Set(previousTransactions.map(t => t.user.id)).size
+    const studentGrowth = recentStudents - previousStudents
+
+    setStats({
+      totalRevenue,
+      revenueGrowth: Math.round(revenueGrowth),
+      totalStudents,
+      studentGrowth,
+      publishedCourses: uniqueCourses.size,
+      pendingCourses: 2, // Placeholder, bisa diganti dengan data real
+      totalCourses: uniqueCourses.size + 2,
+      averageRating: 4.7, // Placeholder, perlu endpoint terpisah untuk reviews
+      ratingChange: 0.3,
+      totalReviews: 542, // Placeholder
+      totalEnrollments,
+    })
+  }
+
+  const processRevenueChart = (transactionsData: Transaction[]) => {
+    const completedTransactions = transactionsData.filter(
+      t => t.status === 'SUCCESS' || t.status === 'COMPLETED' || t.status === 'completed'
+    )
+
+    // Group by month (last 6 months)
+    const monthlyData: { [key: string]: { revenue: number; students: Set<string> } } = {}
+
+    const now = new Date()
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const monthKey = date.toLocaleString('en-US', { month: 'short' })
+      monthlyData[monthKey] = { revenue: 0, students: new Set() }
+    }
+
+    completedTransactions.forEach(transaction => {
+      const date = new Date(transaction.createdAt)
+      const monthKey = date.toLocaleString('en-US', { month: 'short' })
+
+      if (monthlyData[monthKey]) {
+        monthlyData[monthKey].revenue += Number(transaction.amount)
+        monthlyData[monthKey].students.add(transaction.user.id)
+      }
+    })
+
+    const chartData = Object.entries(monthlyData).map(([month, data]) => ({
+      month,
+      revenue: Math.round(data.revenue / 1000), // Konversi ke ribuan
+      students: data.students.size,
+    }))
+
+    setRevenueData(chartData)
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  if (loading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 font-semibold">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -55,12 +280,14 @@ export default function InstructorDashboard() {
                 </div>
                 <span className="flex items-center gap-1 text-sm font-semibold text-green-600">
                   <TrendingUp className="w-4 h-4" />
-                  +12%
+                  {stats.revenueGrowth > 0 ? '+' : ''}{stats.revenueGrowth}%
                 </span>
               </div>
               <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
-              <p className="text-3xl font-bold text-gray-900">Rp 15.2M</p>
-              <p className="text-xs text-gray-500 mt-2">From 1,240 enrollments</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {formatCurrency(stats.totalRevenue)}
+              </p>
+              <p className="text-xs text-gray-500 mt-2">From {stats.totalEnrollments} enrollments</p>
             </div>
 
             {/* Total Students */}
@@ -71,11 +298,11 @@ export default function InstructorDashboard() {
                 </div>
                 <span className="flex items-center gap-1 text-sm font-semibold text-blue-600">
                   <TrendingUp className="w-4 h-4" />
-                  +124
+                  {stats.studentGrowth > 0 ? '+' : ''}{stats.studentGrowth}
                 </span>
               </div>
               <p className="text-sm text-gray-600 mb-1">Total Students</p>
-              <p className="text-3xl font-bold text-gray-900">1,240</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.totalStudents}</p>
               <p className="text-xs text-gray-500 mt-2">Across all courses</p>
             </div>
 
@@ -86,12 +313,12 @@ export default function InstructorDashboard() {
                   <BookOpen className="w-6 h-6 text-purple-600" />
                 </div>
                 <span className="text-sm font-semibold text-purple-600">
-                  2 pending
+                  {stats.pendingCourses} pending
                 </span>
               </div>
               <p className="text-sm text-gray-600 mb-1">Published Courses</p>
-              <p className="text-3xl font-bold text-gray-900">8</p>
-              <p className="text-xs text-gray-500 mt-2">Out of 11 total</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.publishedCourses}</p>
+              <p className="text-xs text-gray-500 mt-2">Out of {stats.totalCourses} total</p>
             </div>
 
             {/* Average Rating */}
@@ -102,12 +329,12 @@ export default function InstructorDashboard() {
                 </div>
                 <span className="flex items-center gap-1 text-sm font-semibold text-amber-600">
                   <TrendingUp className="w-4 h-4" />
-                  +0.3
+                  +{stats.ratingChange}
                 </span>
               </div>
               <p className="text-sm text-gray-600 mb-1">Average Rating</p>
-              <p className="text-3xl font-bold text-gray-900">4.7</p>
-              <p className="text-xs text-gray-500 mt-2">From 542 reviews</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.averageRating}</p>
+              <p className="text-xs text-gray-500 mt-2">From {stats.totalReviews} reviews</p>
             </div>
           </div>
         </section>
@@ -123,7 +350,7 @@ export default function InstructorDashboard() {
 
           {/* Revenue Chart - Full Width */}
           <div className="flex w-full">
-            <RevenueChart />
+            <RevenueChart data={revenueData} />
           </div>
         </section>
 
@@ -138,73 +365,25 @@ export default function InstructorDashboard() {
 
           {/* Recent Transactions */}
           <div className="mb-8">
-            <RecentTransactionsChart />
+            <RecentTransactionsChart transactions={transactions} />
           </div>
 
-          {/* My Courses Section */}
+          {/* My Courses Section - Placeholder */}
           <div>
             <h3 className="text-xl font-semibold text-gray-900 mb-4">My Courses</h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Course 1 */}
-              <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-                <img
-                  className="h-48 w-full object-cover"
-                  src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2670&auto=format&fit=crop"
-                  alt="Web Development Course"
-                />
-                <div className="p-5">
-                  <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-100 px-3 py-1 rounded-full mb-3">
-                    Web Development
-                  </span>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">
-                    Full-Stack Web Developer Bootcamp
-                  </h4>
-                  <div className="flex items-center gap-6 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm font-medium text-gray-700">450 Students</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                      <span className="text-sm font-medium text-gray-700">4.8 (120)</span>
-                    </div>
-                  </div>
-                  <button className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
-                    Manage Course
-                  </button>
+            {stats.publishedCourses === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200">
+                <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">No courses yet. Start creating your first course!</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Course cards will be populated from separate API endpoint */}
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-6 text-center">
+                  <p className="text-gray-600">Course data will be loaded from courses endpoint</p>
                 </div>
               </div>
-
-              {/* Course 2 */}
-              <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-                <img
-                  className="h-48 w-full object-cover"
-                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop"
-                  alt="Data Science Course"
-                />
-                <div className="p-5">
-                  <span className="inline-block text-xs font-semibold text-green-600 bg-green-100 px-3 py-1 rounded-full mb-3">
-                    Data Science
-                  </span>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">
-                    Data Science with Python
-                  </h4>
-                  <div className="flex items-center gap-6 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm font-medium text-gray-700">790 Students</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                      <span className="text-sm font-medium text-gray-700">4.6 (210)</span>
-                    </div>
-                  </div>
-                  <button className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
-                    Manage Course
-                  </button>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </section>
       </main>

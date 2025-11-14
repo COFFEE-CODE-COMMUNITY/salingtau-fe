@@ -10,7 +10,6 @@ import { NavMain } from "@/components/nav-main";
 import { NavUserStudent } from "@/components/nav-user-student";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
-  Home,
   Book,
   Banknote,
   User as UserIcon,
@@ -36,16 +35,11 @@ export function AppSidebarStudent({ ...props }: React.ComponentProps<typeof Side
 
   const studentNavData = [
     {
-      title: "Home",
-      url: "/dashboard/student",
-      icon: Home,
-    },
-    {
       title: "Course",
       url: "#",
       icon: Book,
       items: [
-        { title: "My Course", url: "/dashboard/student/my-course" },
+        { title: "My Course", url: "/dashboard/student" },
         { title: "Explore", url: "/dashboard/student/explore" },
       ],
     },
