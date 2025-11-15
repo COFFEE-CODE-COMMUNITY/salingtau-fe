@@ -117,8 +117,8 @@ export default function CreateCourse() {
   const [metadata, setMetadata] = useState<CourseMetadata>({
     title: "",
     description: "",
-    language: "en-US",
-    price: 99.99,
+    language: "id-ID",
+    price: 75000,
     category: {
       name: "",
     },
@@ -198,7 +198,7 @@ export default function CreateCourse() {
       alert(`Course "${metadata.title}" created successfully!`);
       
       // Navigate to instructor courses page
-      navigate("/dashboard/instructor/courses");
+      navigate("/dashboard/instructor");
     } catch (error: any) {
       console.error("❌ Error creating course:", error);
       alert(`Failed to create course: ${error.response?.data?.message || error.message || "Unknown error"}`);
@@ -304,7 +304,7 @@ export default function CreateCourse() {
 
               <div className="md:col-span-2">
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                  Price (USD) <span className="text-red-500">*</span>
+                  Price (Rupiah) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>

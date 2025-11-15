@@ -6,6 +6,7 @@ import Article from "./article.tsx";
 import {FileDownloadDialog} from "@/components/ui/file-download-dialog.tsx";
 import {ExternalLinkDialog} from "@/components/ui/external-link-dialog.tsx";
 import { useCourseDetail } from "@/services/courseDetail.ts";
+import { getCourseThumbnailUrl, getProfilePictureUrl } from "@/utils/imageUtils";
 import {
   Accordion,
   AccordionContent,
@@ -48,7 +49,8 @@ const PlayCourse = () => {
       console.warn("⚠️ Course has no sections, loading video directly with fallback URL");
       // Fallback: Load video directly if no sections
       if (course) {
-        const testUrl = "http://localhost:8081/api/v1/files/courses/1c0e7702-d645-415f-9338-96bc89a98e22/master.m3u8";
+        const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8081/api/v1"
+        const testUrl = `${baseUrl}/files/courses/1c0e7702-d645-415f-9338-96bc89a98e22/master.m3u8`
         console.log("🧪 Loading fallback video URL:", testUrl);
         setTimeout(() => loadVideo(testUrl), 500);
       }
@@ -99,7 +101,8 @@ const PlayCourse = () => {
         console.warn("⚠️ No video URL found for this lesson");
         
         // Fallback: Try hardcoded URL for testing
-        const testUrl = "http://localhost:8081/api/v1/files/courses/1c0e7702-d645-415f-9338-96bc89a98e22/master.m3u8";
+        const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8081/api/v1"
+        const testUrl = `${baseUrl}/files/courses/1c0e7702-d645-415f-9338-96bc89a98e22/master.m3u8`
         console.log("🧪 Using fallback test URL:", testUrl);
         loadVideo(testUrl);
       }
@@ -329,7 +332,7 @@ const PlayCourse = () => {
             <div className="px-10 py-6 border-t border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img
-                  src={course.instructor.profilePictures?.[0]?.url || "/fallback-avatar.jpg"}
+                  src={getProfilePictureUrl(course.instructor.profilePictures)}
                   alt={`${course.instructor.firstName} ${course.instructor.lastName}`}
                   className="w-10 h-10 rounded-full object-cover"
                 />

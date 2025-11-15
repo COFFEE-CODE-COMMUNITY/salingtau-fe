@@ -20,6 +20,7 @@ import { useUser } from "@/utils/user-context.tsx";
 import type { CreateTransactionDto, CreateTransactionResponseDto } from "@/types/transaction.types";
 import { validateTransactionData } from "@/utils/validation";
 import { useCourseDetail } from "@/services/courseDetail.ts";
+import { getCourseThumbnailUrl, getProfilePictureUrl } from "@/utils/imageUtils";
 
 const formatDuration = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
@@ -192,7 +193,7 @@ const CourseDetailPage = () => {
       {/* Hero Section */}
       <div className="relative h-96 bg-gray-900">
         <img
-          src={courseData.thumbnail?.url || "/placeholder-course.jpg"}
+          src={getCourseThumbnailUrl(courseData.thumbnail)}
           alt={courseData.title}
           className="w-full h-full object-cover opacity-40"
         />
@@ -215,7 +216,7 @@ const CourseDetailPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <img
-                    src={courseData.instructor.profilePictures?.[0]?.url || "/fallback-avatar.jpg"}
+                    src={getProfilePictureUrl(courseData.instructor.profilePictures)}
                     alt={`${courseData.instructor.firstName} ${courseData.instructor.lastName}`}
                     className="w-6 h-6 rounded-full"
                   />
@@ -359,7 +360,7 @@ const CourseDetailPage = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-lg p-6 sticky top-4">
               <img
-                src={courseData.thumbnail?.url || "/placeholder-course.jpg"}
+                src={getCourseThumbnailUrl(courseData.thumbnail)}
                 alt={courseData.title}
                 className="w-full h-48 object-cover rounded-lg mb-4"
               />
@@ -409,7 +410,7 @@ const CourseDetailPage = () => {
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Instructor</h3>
                 <div className="flex items-start gap-3">
                   <img
-                    src={courseData.instructor.profilePictures?.[0]?.url || "/fallback-avatar.jpg"}
+                    src={getProfilePictureUrl(courseData.instructor.profilePictures)}
                     alt={`${courseData.instructor.firstName} ${courseData.instructor.lastName}`}
                     className="w-12 h-12 rounded-full"
                   />

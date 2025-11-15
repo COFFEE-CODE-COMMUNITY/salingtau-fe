@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { StarRating } from "@/components/ui/star-rating.tsx";
 import type { Course } from "@/services/exploreCourse.ts";
+import { getCourseThumbnailUrl, getProfilePictureUrl } from "@/utils/imageUtils";
 
 export type { Course };
 
@@ -28,6 +29,8 @@ function CategoryColor(categoryName: string): string {
 export const CourseCard = ({ course }: { course: Course }) => {
   const instructorName = `${course.instructor.firstName} ${course.instructor.lastName}`;
   const categoryName = course.category?.name || "Uncategorized";
+  const thumbnailUrl = getCourseThumbnailUrl(course.thumbnail);
+  const instructorAvatar = getProfilePictureUrl(course.instructor.profilePictures);
   
   return (
     <Link
@@ -37,7 +40,7 @@ export const CourseCard = ({ course }: { course: Course }) => {
       <div className="relative">
         <img
           className="h-40 w-full object-cover"
-          src={course.thumbnail?.url || "/placeholder-course.jpg"}
+          src={thumbnailUrl}
           alt={course.title}
         />
         {/* Price Badge */}

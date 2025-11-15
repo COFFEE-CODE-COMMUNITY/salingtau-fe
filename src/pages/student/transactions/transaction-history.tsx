@@ -2,6 +2,7 @@ import { Calendar, CreditCard, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTransactionHistory, PaymentStatus } from "@/services/transactionHistory.ts";
 import { useUser } from "@/utils/user-context.tsx";
+import { getCourseThumbnailUrl } from "@/utils/imageUtils";
 
 export default function TransactionHistory() {
   const navigate = useNavigate();
@@ -85,12 +86,9 @@ export default function TransactionHistory() {
                   <div className="flex items-start gap-4">
                     {/* Course Thumbnail */}
                     <img
-                      src={transaction.course.thumbnail?.url || "/placeholder-course.jpg"}
+                      src={getCourseThumbnailUrl(transaction.course.thumbnail)}
                       alt={transaction.course.title}
                       className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-                      onError={(e) => {
-                        e.currentTarget.src = "/placeholder-course.jpg";
-                      }}
                     />
 
                     {/* Transaction Info */}
