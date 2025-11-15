@@ -4,6 +4,7 @@ import type { Course, Instructor, Category } from "./exploreCourse"
 
 // Extended types for course detail
 export interface Section {
+  lectures: any
   id: string
   title: string
   description?: string

@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { ArrowLeft, UploadCloud } from "lucide-react"
-import {createCourse, uploadThumbnail, uploadLectureContent} from "@/services/uploadCourse.ts";
-import {useUser} from "@/utils/user-context.tsx";
+import { useUploadCourse } from "@/services/uploadCourse.ts";
+import { useNavigate } from "react-router-dom";
 
 const categoriesData = [
   { name: "Web Development" },
@@ -112,7 +112,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, onFileChange, currentFil
 };
 
 export default function CreateCourse() {
-  const {user} = useUser();
+  const navigate = useNavigate();
+  const { uploadCourse } = useUploadCourse();
   const [metadata, setMetadata] = useState<CourseMetadata>({
     title: "",
     description: "",
@@ -123,12 +124,12 @@ export default function CreateCourse() {
     },
   });
 
-  // const {uploadCourse} = useUploadCourse()
-
   const [files, setFiles] = useState<CourseFiles>({
     thumbnail: null,
     video: null,
   });
+
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -157,33 +158,53 @@ export default function CreateCourse() {
   };
 
   const handleSubmit = async () => {
+    // Validation
     if (!metadata.title || !metadata.category.name) {
       alert("Please fill in all required fields (Title and Category).");
       return;
     }
 
-    console.log("Course Metadata:", metadata);
-    console.log("Course Files:", files);
+    if (!metadata.description) {
+      alert("Please provide a course description.");
+      return;
+    }
 
-    // Example: create FormData for multipart upload
-    const formData = new FormData();
-    formData.append("metadata", JSON.stringify(metadata));
-    if (files.thumbnail) formData.append("thumbnail", files.thumbnail);
-    if (files.video) formData.append("video", files.video);
+    if (!files.thumbnail) {
+      alert("Please upload a course thumbnail.");
+      return;
+    }
 
-    console.log("FormData ready for upload");
-    const course = await createCourse({
-      title: metadata.title,
-      description: metadata.description,
-      language: metadata.language,
-      price: metadata.price,
-      category: {
-        name: metadata.category.name,
-      },
-    })
-    const thumbnail = await uploadThumbnail(course.data.id, files.thumbnail!)
-    const video = await uploadLectureContent(course.data.id, user!.id, files.video!)
-    console.log("Create course sukses ", course, thumbnail, video)
+    if (!files.video) {
+      alert("Please upload a course video.");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      console.log("Starting course upload...");
+      
+      const course = await uploadCourse({
+        title: metadata.title,
+        description: metadata.description,
+        language: metadata.language,
+        price: metadata.price,
+        category: metadata.category,
+        thumbnail: files.thumbnail,
+        video: files.video,
+      });
+
+      console.log("✅ Course created successfully:", course);
+      alert(`Course "${metadata.title}" created successfully!`);
+      
+      // Navigate to instructor courses page
+      navigate("/dashboard/instructor/courses");
+    } catch (error: any) {
+      console.error("❌ Error creating course:", error);
+      alert(`Failed to create course: ${error.response?.data?.message || error.message || "Unknown error"}`);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -330,17 +351,19 @@ export default function CreateCourse() {
           <div className="flex justify-end gap-4">
             <button
               type="button"
-              onClick={() => alert("Discarding changes...")}
+              onClick={() => navigate("/dashboard/instructor/courses")}
               className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition"
+              disabled={isUploading}
             >
-              Discard
+              Cancel
             </button>
             <button
               type="button"
               onClick={handleSubmit}
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition shadow-sm"
+              disabled={isUploading}
+              className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition shadow-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Create Course
+              {isUploading ? "Uploading..." : "Create Course"}
             </button>
           </div>
         </div>
