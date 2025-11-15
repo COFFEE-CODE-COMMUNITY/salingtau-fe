@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { StarRating } from "@/components/ui/star-rating.tsx";
 import type { Course } from "@/services/exploreCourse.ts";
-import { getCourseThumbnailUrl, getProfilePictureUrl } from "@/utils/imageUtils";
+import { getCourseThumbnailUrl } from "@/utils/imageUtils";
 
 export type { Course };
 
@@ -30,7 +30,6 @@ export const CourseCard = ({ course }: { course: Course }) => {
   const instructorName = `${course.instructor.firstName} ${course.instructor.lastName}`;
   const categoryName = course.category?.name || "Uncategorized";
   const thumbnailUrl = getCourseThumbnailUrl(course.thumbnail);
-  const instructorAvatar = getProfilePictureUrl(course.instructor.profilePictures);
   
   return (
     <Link

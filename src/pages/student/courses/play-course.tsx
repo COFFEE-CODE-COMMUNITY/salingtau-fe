@@ -6,7 +6,7 @@ import Article from "./article.tsx";
 import {FileDownloadDialog} from "@/components/ui/file-download-dialog.tsx";
 import {ExternalLinkDialog} from "@/components/ui/external-link-dialog.tsx";
 import { useCourseDetail } from "@/services/courseDetail.ts";
-import { getCourseThumbnailUrl, getProfilePictureUrl } from "@/utils/imageUtils";
+import { getProfilePictureUrl } from "@/utils/imageUtils";
 import {
   Accordion,
   AccordionContent,
