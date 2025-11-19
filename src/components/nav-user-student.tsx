@@ -27,6 +27,7 @@ import {
 import { useUser } from "@/utils/user-context.tsx"
 import { useNavigate } from "react-router-dom"
 import {useUserStore} from "@/utils/useActiveRoles.ts";
+import {useLogout} from "@/services/useLogout.ts";
 
 const userFallback = {
   name: "Guest",
@@ -36,6 +37,7 @@ const userFallback = {
 
 export function NavUserStudent() {
   const { isMobile } = useSidebar()
+  const logout = useLogout()
   const { user, clearUser } = useUser()
   const navigate = useNavigate()
   const setActiveRole = useUserStore((state) => state.setActiveRole)
@@ -53,7 +55,8 @@ export function NavUserStudent() {
     return undefined
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logout()
     clearUser()
     navigate("/login")
   }
