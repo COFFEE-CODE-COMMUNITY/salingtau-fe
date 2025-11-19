@@ -7,6 +7,7 @@ import api, { setAccessToken } from "@/services/api"
 import { getMe } from "@/services/getMe.ts"
 import { useUser} from "@/utils/user-context.tsx"
 import {useUserStore} from "@/utils/useActiveRoles.ts";
+import {checkAuth} from "@/services/checkAuth.ts";
 
 interface LoginBody {
   email: string
@@ -33,7 +34,21 @@ export default function Login() {
         navigate("/dashboard/student", { replace: true })
       }
     }
-  }, [user, activeRole, navigate])
+
+    const init = async () => {
+      const auth = await checkAuth()
+
+      if (auth) {
+        const me = await getMe()
+        if (me) {
+          saveUser(me)
+          navigate("/dashboard/student", { replace: true })
+        }
+      }
+    }
+
+    init()
+  }, [user, activeRole, navigate, saveUser])
 
 
   const handleChange = useCallback(
