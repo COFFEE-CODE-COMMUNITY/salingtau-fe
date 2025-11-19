@@ -40,8 +40,10 @@ export function NavUserStudent() {
   const navigate = useNavigate()
   const setActiveRole = useUserStore((state) => state.setActiveRole)
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const f = firstName?.charAt(0) ?? ""
+    const l = lastName?.charAt(0) ?? ""
+    return `${f}${l}`.toUpperCase() || "GU"
   }
 
   const getProfilePicture = () => {
