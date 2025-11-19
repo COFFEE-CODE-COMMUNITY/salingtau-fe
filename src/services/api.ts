@@ -11,7 +11,7 @@ declare module "axios" {
 }
 
 const api = axios.create({
-  baseURL: import.meta.env.PROD ? "https://api.salingtau.cthree.it.com/" : "http://localhost:8081/",
+  baseURL: import.meta.env.PROD ? "https://api.salingtau.cthree.it.com/v1" : "http://localhost:8081/",
   withCredentials: true,
   validateStatus: () => true,
   timeout: 10000, // 10s timeout
