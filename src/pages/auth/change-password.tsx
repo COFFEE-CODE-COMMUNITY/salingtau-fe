@@ -73,7 +73,6 @@ export default function ChangePassword() {
         logoutAll: true,
       })
       .then((response) => {
-        console.log(response.data)
         if (response.status === 200) {
           setSuccess(true)
 
@@ -88,8 +87,6 @@ export default function ChangePassword() {
         setLoading(false)
       })
       .catch((error) => {
-        console.error("Change password error:", error)
-
         const message = error.response?.data?.message || "Failed to reset password. Please try again."
         setErrorMessage(message)
 

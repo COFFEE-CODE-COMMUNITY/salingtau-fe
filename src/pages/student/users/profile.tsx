@@ -54,16 +54,11 @@ const UserProfilePage = () => {
     setSaveSuccess(false)
 
     try {
-      console.log("📤 Uploading profile picture...")
-
-      // === Upload ke backend ===
       const response = await api.put("/users/me/profile-picture", file, {
         headers: { "Content-Type": file.type },
       })
 
       if (response.status === 200) {
-        console.log("✅ Upload success, refreshing user data...")
-
         const refreshedUser = await getMe()
         if (refreshedUser) {
           const originalUrl =
@@ -77,9 +72,7 @@ const UserProfilePage = () => {
             ]
           }
 
-          // Simpan ke context → foto langsung berubah di UI
           saveUser(refreshedUser)
-          console.log("🔁 User data updated in context after photo upload")
         }
 
         // Notifikasi sukses
@@ -89,7 +82,6 @@ const UserProfilePage = () => {
         throw new Error("Failed to upload profile picture")
       }
     } catch (error: any) {
-      console.error("❌ Profile picture upload failed:", error)
       setSaveError(
         error.response?.data?.message ||
         "Failed to upload profile picture. Please try again."
@@ -137,19 +129,14 @@ const UserProfilePage = () => {
       })
 
       if (Object.keys(payload).length === 0) {
-        console.log('⚪ Tidak ada perubahan, skip request')
         setIsEditing(false)
         setIsSaving(false)
         return
       }
 
-      console.log('📤 Sending changed fields only:', payload)
-
       const response = await api.patch('/users/me', payload)
 
       if (response.status === 200 && response.data) {
-        console.log('✅ Profile updated successfully:', response.data)
-
         saveUser(response.data)
         setIsEditing(false)
         setSaveSuccess(true)

@@ -7,8 +7,6 @@ interface VeriffRedirectProps {
 export default function Veriff({ sessionUrl }: VeriffRedirectProps) {
   useEffect(() => {
     if (!sessionUrl) return
-
-    console.log("🌐 Redirecting to Veriff:", sessionUrl)
     window.location.href = sessionUrl
   }, [sessionUrl])
 

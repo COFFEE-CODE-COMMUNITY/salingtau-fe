@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { ArrowLeft, UploadCloud } from "lucide-react"
+import { UploadCloud } from "lucide-react"
 import { useUploadCourse } from "@/services/uploadCourse.ts";
 import { useNavigate } from "react-router-dom";
 
@@ -15,10 +15,6 @@ const categoriesData = [
 const languagesData = [
   { code: "en-US", name: "English (US)" },
   { code: "id-ID", name: "Indonesian" },
-  { code: "es-ES", name: "Spanish" },
-  { code: "fr-FR", name: "French" },
-  { code: "de-DE", name: "German" },
-  { code: "ja-JP", name: "Japanese" },
 ]
 
 interface CourseMetadata {
@@ -212,12 +208,6 @@ export default function CreateCourse() {
       <header className="sticky top-0 bg-white/80 backdrop-blur-sm z-10">
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Create New Course</h2>
-          <button
-            onClick={() => alert("Going back...")}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
-          >
-            <ArrowLeft className="w-5 h-5" /> Back
-          </button>
         </div>
       </header>
 

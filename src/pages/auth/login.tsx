@@ -86,7 +86,6 @@ export default function Login() {
         setErrors(response.data.errors || { email: ["Login failed"] })
       }
     } catch (error: any) {
-      console.error("❌ Login error:", error)
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors)
       } else {

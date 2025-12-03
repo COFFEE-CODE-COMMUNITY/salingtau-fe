@@ -37,7 +37,6 @@ export default function ForgotPassword() {
     await api
       .post("/auth/password-reset", data)
       .then((response) => {
-        console.log(response.data)
         if (response.status === 200) {
           setSuccess(true)
           setIsCounting(true)
@@ -49,7 +48,6 @@ export default function ForgotPassword() {
         setLoading(false)
       })
       .catch((error) => {
-        console.error("Forgot password error:", error)
 
         if (error.response?.data?.errors) {
           setErrors(error.response.data.errors)

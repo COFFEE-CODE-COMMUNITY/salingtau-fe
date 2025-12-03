@@ -14,7 +14,6 @@ export default function ApplyAsInstructor() {
         { withCredentials: true }
       )
 
-      console.log("Response dari backend:", res.data)
       setSessionUrl(res.data.url)
     } catch (err) {
       console.error("Error apply-as-instructor:", err)

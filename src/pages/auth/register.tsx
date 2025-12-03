@@ -43,7 +43,6 @@ export default function Register() {
       skipAuth: true
     })
       .then(response => {
-        console.log(response.data)
         if (response.status === 201) {
           setSuccess(true)
           navigate("/login")

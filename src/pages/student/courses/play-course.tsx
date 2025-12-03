@@ -33,11 +33,11 @@ const PlayCourse = () => {
     
     if (course?.sections && course.sections.length > 0) {
       console.log("✅ Course has", course.sections.length, "sections");
-      
+
       const allLessons = course.sections.flatMap((s) => s.lectures || []);
       console.log("📋 All lessons:", allLessons);
       console.log("📋 Total lessons:", allLessons.length);
-      
+
       if (allLessons.length > 0) {
         const firstLesson = allLessons[0];
         console.log("🎯 Setting first lesson as active:", firstLesson);
@@ -69,7 +69,6 @@ const PlayCourse = () => {
 
   useEffect(() => {
     if (!activeLessonId) {
-      console.warn("⚠️ No active lesson ID set yet");
       return;
     }
 
@@ -117,9 +116,6 @@ const PlayCourse = () => {
       console.error("❌ Video element not found");
       return;
     }
-
-    console.log("📦 Loading video:", videoUrl);
-
     // Destroy existing HLS instance
     if (hlsRef.current) {
       console.log("🧹 Destroying existing HLS instance");
@@ -205,8 +201,6 @@ const PlayCourse = () => {
         alert("Your browser does not support HLS video playback. Please use a modern browser like Chrome, Firefox, or Safari.");
       }
     } else {
-      console.log("🎬 Regular video file detected");
-      // For regular mp4 or other video formats
       video.src = videoUrl;
       video.load();
       video.play().catch((err) => {
