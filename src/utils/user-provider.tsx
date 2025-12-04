@@ -50,7 +50,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
               return
             }
           } catch (error) {
-            console.warn("⚠️ getMe failed, will try refresh:", error)
+            console.error(error)
           }
         }
 
@@ -69,13 +69,11 @@ export const UserProvider = ({ children }: UserProviderProps) => {
               setUserStore(data)
             }
           }
-        } catch (refreshError) {
-          console.warn("⚠️ Token refresh failed:", refreshError)
         } finally {
           setIsRefreshing(false)
         }
       } catch (error) {
-        console.error("❌ User initialization failed:", error)
+        console.error(error)
       } finally {
         setLoading(false)
       }
