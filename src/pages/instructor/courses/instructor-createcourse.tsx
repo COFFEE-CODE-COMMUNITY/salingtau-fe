@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { UploadCloud } from "lucide-react"
+import { UploadCloud, Plus, Trash2 } from "lucide-react"
 import { useUploadCourse } from "@/services/uploadCourse.ts";
 import { useNavigate } from "react-router-dom";
 
@@ -27,9 +27,16 @@ interface CourseMetadata {
   };
 }
 
-interface CourseFiles {
-  thumbnail: File | null;
-  video: File | null;
+interface VideoItem {
+  id: string;
+  title: string;
+  file: File | null;
+}
+
+interface Section {
+  id: string;
+  name: string;
+  videos: VideoItem[];
 }
 
 interface FileUploadProps {
@@ -109,7 +116,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, onFileChange, currentFil
 
 export default function CreateCourse() {
   const navigate = useNavigate();
-  const { uploadCourse } = useUploadCourse();
+  useUploadCourse();
   const [metadata, setMetadata] = useState<CourseMetadata>({
     title: "",
     description: "",
@@ -120,10 +127,21 @@ export default function CreateCourse() {
     },
   });
 
-  const [files, setFiles] = useState<CourseFiles>({
-    thumbnail: null,
-    video: null,
-  });
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+
+  const [sections, setSections] = useState<Section[]>([
+    {
+      id: '1',
+      name: 'Section 1',
+      videos: [
+        {
+          id: '1-1',
+          title: '',
+          file: null
+        }
+      ]
+    }
+  ]);
 
   const [isUploading, setIsUploading] = useState(false);
 
@@ -146,11 +164,94 @@ export default function CreateCourse() {
   };
 
   const handleThumbnailChange = (file: File | null) => {
-    setFiles((prev) => ({ ...prev, thumbnail: file }));
+    setThumbnail(file);
   };
 
-  const handleVideoChange = (file: File | null) => {
-    setFiles((prev) => ({ ...prev, video: file }));
+  const addSection = () => {
+    const newSectionNumber = sections.length + 1;
+    setSections([...sections, {
+      id: Date.now().toString(),
+      name: `Section ${newSectionNumber}`,
+      videos: [{
+        id: `${Date.now()}-1`,
+        title: '',
+        file: null
+      }]
+    }]);
+  };
+
+  const removeSection = (sectionId: string) => {
+    if (sections.length === 1) {
+      alert("Harus ada minimal satu section");
+      return;
+    }
+    setSections(sections.filter(s => s.id !== sectionId));
+  };
+
+  const updateSectionName = (sectionId: string, name: string) => {
+    setSections(sections.map(s =>
+      s.id === sectionId ? { ...s, name } : s
+    ));
+  };
+
+  const addVideoToSection = (sectionId: string) => {
+    setSections(sections.map(s => {
+      if (s.id === sectionId) {
+        return {
+          ...s,
+          videos: [...s.videos, {
+            id: `${Date.now()}-${s.videos.length + 1}`,
+            title: '',
+            file: null
+          }]
+        };
+      }
+      return s;
+    }));
+  };
+
+  const removeVideoFromSection = (sectionId: string, videoId: string) => {
+    setSections(sections.map(s => {
+      if (s.id === sectionId) {
+        if (s.videos.length === 1) {
+          alert("Harus ada minimal satu video per section");
+          return s;
+        }
+        return {
+          ...s,
+          videos: s.videos.filter(v => v.id !== videoId)
+        };
+      }
+      return s;
+    }));
+  };
+
+  const updateVideoTitle = (sectionId: string, videoId: string, title: string) => {
+    setSections(sections.map(s => {
+      if (s.id === sectionId) {
+        return {
+          ...s,
+          videos: s.videos.map(v =>
+            v.id === videoId ? { ...v, title } : v
+          )
+        };
+      }
+      return s;
+    }));
+  };
+
+  const updateVideoFile = (sectionId: string, videoId: string, file: File | null) => {
+    setSections(sections.map(s => {
+      if (s.id === sectionId) {
+        return {
+          ...s,
+          videos: s.videos.map(v =>
+            v.id === videoId ? { ...v, file } : v
+          )
+        };
+      }
+      return s;
+    }));
   };
 
   const handleSubmit = async () => {
@@ -165,36 +266,53 @@ export default function CreateCourse() {
       return;
     }
 
-    if (!files.thumbnail) {
+    if (!thumbnail) {
       alert("Please upload a course thumbnail.");
       return;
     }
 
-    if (!files.video) {
-      alert("Please upload a course video.");
-      return;
+    // Validate sections and videos
+    for (const section of sections) {
+      if (!section.name.trim()) {
+        alert(`Section name cannot be empty`);
+        return;
+      }
+
+      for (const video of section.videos) {
+        if (!video.title.trim()) {
+          alert(`Please fill in all video titles in ${section.name}`);
+          return;
+        }
+        if (!video.file) {
+          alert(`Please upload all videos in ${section.name}`);
+          return;
+        }
+      }
     }
 
     setIsUploading(true);
 
     try {
       console.log("Starting course upload...");
-      
-      const course = await uploadCourse({
-        title: metadata.title,
-        description: metadata.description,
-        language: metadata.language,
-        price: metadata.price,
-        category: metadata.category,
-        thumbnail: files.thumbnail,
-        video: files.video,
-      });
+      console.log("Sections:", sections);
 
-      console.log("✅ Course created successfully:", course);
-      alert(`Course "${metadata.title}" created successfully!`);
-      
-      // Navigate to instructor courses page
-      navigate("/dashboard/instructor");
+      // Note: You'll need to modify your uploadCourse service to handle multiple sections and videos
+      // For now, this is a placeholder showing the structure
+      alert("Upload functionality needs to be implemented in the backend to handle multiple sections and videos");
+
+      // const course = await uploadCourse({
+      //   title: metadata.title,
+      //   description: metadata.description,
+      //   language: metadata.language,
+      //   price: metadata.price,
+      //   category: metadata.category,
+      //   thumbnail: thumbnail,
+      //   sections: sections, // This will contain all sections with their videos
+      // });
+
+      // console.log("✅ Course created successfully:", course);
+      // alert(`Course "${metadata.title}" created successfully!`);
+      // navigate("/dashboard/instructor");
     } catch (error: any) {
       console.error("❌ Error creating course:", error);
       alert(`Failed to create course: ${error.response?.data?.message || error.message || "Unknown error"}`);
@@ -314,26 +432,139 @@ export default function CreateCourse() {
             </div>
           </div>
 
-          {/* Course Files Section */}
+          {/* Course Thumbnail */}
           <div className="bg-white p-8 rounded-xl shadow-md border border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 pb-3 border-b">Course Media</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6 pb-3 border-b">Course Thumbnail</h2>
+            <FileUpload
+              label="Course Thumbnail"
+              onFileChange={handleThumbnailChange}
+              currentFile={thumbnail}
+              accept="image/*"
+              description="PNG, JPG or WEBP (MAX. 2MB)"
+            />
+          </div>
+
+          {/* Course Sections with Videos */}
+          <div className="bg-white p-8 rounded-xl shadow-md border border-gray-100">
+            <div className="flex items-center justify-between mb-6 pb-3 border-b">
+              <h2 className="text-xl font-bold text-gray-900">Course Content</h2>
+              <button
+                type="button"
+                onClick={addSection}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+              >
+                <Plus className="w-4 h-4" />
+                Add Section
+              </button>
+            </div>
 
             <div className="space-y-6">
-              <FileUpload
-                label="Course Thumbnail"
-                onFileChange={handleThumbnailChange}
-                currentFile={files.thumbnail}
-                accept="image/*"
-                description="PNG, JPG or WEBP (MAX. 2MB)"
-              />
+              {sections.map((section) => (
+                <div key={section.id} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                  <div className="flex items-center gap-4 mb-4">
+                    <input
+                      type="text"
+                      value={section.name}
+                      onChange={(e) => updateSectionName(section.id, e.target.value)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
+                      placeholder="Section Name"
+                    />
+                    {sections.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeSection(section.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Remove Section"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
 
-              <FileUpload
-                label="Course Video"
-                onFileChange={handleVideoChange}
-                currentFile={files.video}
-                accept="video/*"
-                description="MP4, WEBM or AVI (MAX. 100MB)"
-              />
+                  <div className="space-y-4">
+                    {section.videos.map((video) => (
+                      <div key={video.id} className="bg-white p-4 rounded-lg border border-gray-200">
+                        <div className="flex items-start gap-4 mb-3">
+                          <div className="flex-1">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Video Title <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={video.title}
+                              onChange={(e) => updateVideoTitle(section.id, video.id, e.target.value)}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="e.g., Introduction to HTML"
+                            />
+                          </div>
+                          {section.videos.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeVideoFromSection(section.id, video.id)}
+                              className="mt-7 p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                              title="Remove Video"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="mt-1">
+                          <div
+                            className="flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-lg border-gray-300 hover:border-gray-400 transition"
+                          >
+                            <div className="space-y-2 text-center">
+                              <UploadCloud className="mx-auto h-10 w-10 text-gray-400" />
+                              <div className="flex text-sm text-gray-600">
+                                <label
+                                  htmlFor={`video-upload-${section.id}-${video.id}`}
+                                  className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500"
+                                >
+                                  <span>Upload video</span>
+                                  <input
+                                    id={`video-upload-${section.id}-${video.id}`}
+                                    type="file"
+                                    className="sr-only"
+                                    onChange={(e) => {
+                                      if (e.target.files && e.target.files[0]) {
+                                        updateVideoFile(section.id, video.id, e.target.files[0]);
+                                      }
+                                    }}
+                                    accept="video/*"
+                                  />
+                                </label>
+                                <p className="pl-1">or drag and drop</p>
+                              </div>
+                              <p className="text-xs text-gray-500">MP4, WEBM or AVI (MAX. 100MB)</p>
+                              {video.file && (
+                                <p className="text-sm font-medium text-gray-900 mt-2">
+                                  File: <span className="text-blue-600">{video.file.name}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateVideoFile(section.id, video.id, null)}
+                                    className="ml-2 text-red-500 hover:text-red-700 text-xs"
+                                  >
+                                    (Remove)
+                                  </button>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() => addVideoToSection(section.id)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Video to {section.name}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

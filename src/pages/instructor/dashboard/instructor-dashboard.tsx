@@ -1,11 +1,9 @@
-import { BookOpen, DollarSign, Star, Users, TrendingUp } from 'lucide-react'
 import { useUser } from "@/utils/user-context.tsx"
-import {
-  RecentTransactionsChart,
-  RevenueChart,
-} from "@/components/ui/charts.tsx"
+import { RevenueChart } from "@/components/ui/charts.tsx"
 import { useEffect, useState } from 'react'
 import api from '@/services/api'
+import OverviewSection from '../dashboard/overview-section'
+import RecentActivitySection from '../dashboard/recent-activity-section.tsx'
 
 interface Transaction {
   id: string
@@ -54,6 +52,22 @@ interface RevenueChartData {
   students: number
 }
 
+interface Course {
+  id: string
+  title: string
+  slug: string
+  price: number
+  thumbnail?: {
+    url: string
+  }
+  status: 'PUBLISHED' | 'DRAFT' | 'PENDING'
+  enrollments: number
+  revenue: number
+  rating: number
+  totalReviews: number
+  lastUpdated: string
+}
+
 export default function InstructorDashboard() {
   const { user } = useUser()
   const name = user ? user.firstName : "Instructor"
@@ -76,21 +90,84 @@ export default function InstructorDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Motivational messages
-  const messages = [
-    "Your teaching creates endless ripples.",
-    "Sharing knowledge is the best way to grow it.",
-    "Great instructors inspire the future.",
-    "Every question you answer builds a stronger community.",
-    "Your courses are empowering hundreds.",
-    "Keep creating, keep inspiring.",
-    "The impact of a good teacher is immeasurable.",
-    "You're not just teaching skills, you're changing lives.",
-    "Your expertise is valuable. Thank you for sharing it.",
-    "Every course you build is a new door for someone."
-  ]
-
-  const randomMessage = messages[Math.floor(Math.random() * messages.length)]
+  // Dummy courses data
+  const [courses, setCourses] = useState<Course[]>([
+    {
+      id: '1',
+      title: 'Complete Web Development Bootcamp 2024',
+      slug: 'web-development-bootcamp-2024',
+      price: 499000,
+      thumbnail: {
+        url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop'
+      },
+      status: 'PUBLISHED',
+      enrollments: 234,
+      revenue: 116766000,
+      rating: 4.8,
+      totalReviews: 156,
+      lastUpdated: '2024-11-28'
+    },
+    {
+      id: '2',
+      title: 'Modern React with TypeScript',
+      slug: 'modern-react-typescript',
+      price: 399000,
+      thumbnail: {
+        url: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=600&fit=crop'
+      },
+      status: 'PUBLISHED',
+      enrollments: 187,
+      revenue: 74613000,
+      rating: 4.9,
+      totalReviews: 98,
+      lastUpdated: '2024-12-01'
+    },
+    {
+      id: '3',
+      title: 'Python for Data Science',
+      slug: 'python-data-science',
+      price: 549000,
+      thumbnail: {
+        url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&h=600&fit=crop'
+      },
+      status: 'PUBLISHED',
+      enrollments: 145,
+      revenue: 79605000,
+      rating: 4.7,
+      totalReviews: 87,
+      lastUpdated: '2024-11-25'
+    },
+    {
+      id: '4',
+      title: 'UI/UX Design Masterclass',
+      slug: 'uiux-design-masterclass',
+      price: 449000,
+      thumbnail: {
+        url: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=600&fit=crop'
+      },
+      status: 'DRAFT',
+      enrollments: 0,
+      revenue: 0,
+      rating: 0,
+      totalReviews: 0,
+      lastUpdated: '2024-12-03'
+    },
+    {
+      id: '5',
+      title: 'Node.js Backend Development',
+      slug: 'nodejs-backend-development',
+      price: 479000,
+      thumbnail: {
+        url: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=800&h=600&fit=crop'
+      },
+      status: 'PENDING',
+      enrollments: 0,
+      revenue: 0,
+      rating: 0,
+      totalReviews: 0,
+      lastUpdated: '2024-12-04'
+    }
+  ])
 
   useEffect(() => {
     const fetchTransactionHistory = async () => {
@@ -223,6 +300,20 @@ export default function InstructorDashboard() {
     }).format(amount)
   }
 
+  const handleDeleteCourse = (courseId: string) => {
+    if (window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+      setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId))
+      // TODO: Add API call to delete course
+      // await api.delete(`/courses/${courseId}`)
+    }
+  }
+
+  const handleEditCourse = (courseId: string) => {
+    // TODO: Navigate to edit page or open edit modal
+    console.log('Edit course:', courseId)
+    // Example: navigate(`/instructor/courses/${courseId}/edit`)
+  }
+
   if (loading) {
     return (
       <div className="w-full h-screen flex items-center justify-center">
@@ -260,88 +351,14 @@ export default function InstructorDashboard() {
       </header>
 
       <main className="w-full bg-gray-50 min-h-screen">
-        {/* ========================================
-            SECTION 1: OVERVIEW
-        ======================================== */}
-        <section className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-8">
-          {/* Welcome Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Welcome back, {name}! 👋</h1>
-            <p className="mt-2 text-gray-600">{randomMessage}</p>
-          </div>
+        {/* SECTION 1: OVERVIEW */}
+        <OverviewSection
+          name={name}
+          stats={stats}
+          formatCurrency={formatCurrency}
+        />
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Total Revenue */}
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100 hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <div className="bg-green-100 p-3 rounded-xl">
-                  <DollarSign className="w-6 h-6 text-green-600" />
-                </div>
-                <span className="flex items-center gap-1 text-sm font-semibold text-green-600">
-                  <TrendingUp className="w-4 h-4" />
-                  {stats.revenueGrowth > 0 ? '+' : ''}{stats.revenueGrowth}%
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
-              <p className="text-3xl font-bold text-gray-900">
-                {formatCurrency(stats.totalRevenue)}
-              </p>
-              <p className="text-xs text-gray-500 mt-2">From {stats.totalEnrollments} enrollments</p>
-            </div>
-
-            {/* Total Students */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <div className="bg-blue-100 p-3 rounded-xl">
-                  <Users className="w-6 h-6 text-blue-600" />
-                </div>
-                <span className="flex items-center gap-1 text-sm font-semibold text-blue-600">
-                  <TrendingUp className="w-4 h-4" />
-                  {stats.studentGrowth > 0 ? '+' : ''}{stats.studentGrowth}
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 mb-1">Total Students</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.totalStudents}</p>
-              <p className="text-xs text-gray-500 mt-2">Across all courses</p>
-            </div>
-
-            {/* Published Courses */}
-            <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-6 rounded-xl border border-purple-100 hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <div className="bg-purple-100 p-3 rounded-xl">
-                  <BookOpen className="w-6 h-6 text-purple-600" />
-                </div>
-                <span className="text-sm font-semibold text-purple-600">
-                  {stats.pendingCourses} pending
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 mb-1">Published Courses</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.publishedCourses}</p>
-              <p className="text-xs text-gray-500 mt-2">Out of {stats.totalCourses} total</p>
-            </div>
-
-            {/* Average Rating */}
-            <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-6 rounded-xl border border-amber-100 hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <div className="bg-amber-100 p-3 rounded-xl">
-                  <Star className="w-6 h-6 text-amber-600" />
-                </div>
-                <span className="flex items-center gap-1 text-sm font-semibold text-amber-600">
-                  <TrendingUp className="w-4 h-4" />
-                  +{stats.ratingChange}
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 mb-1">Average Rating</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.averageRating}</p>
-              <p className="text-xs text-gray-500 mt-2">From {stats.totalReviews} reviews</p>
-            </div>
-          </div>
-        </section>
-
-        {/* ========================================
-            SECTION 2: ANALYTICS CHARTS
-        ======================================== */}
+        {/* SECTION 2: ANALYTICS CHARTS */}
         <section className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Analytics Overview</h2>
@@ -354,38 +371,14 @@ export default function InstructorDashboard() {
           </div>
         </section>
 
-        {/* ========================================
-            SECTION 3: RECENT ACTIVITY
-        ======================================== */}
-        <section className="px-4 sm:px-6 lg:px-8 py-8 bg-white border-t border-gray-200">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Recent Activity</h2>
-            <p className="text-gray-600 mt-1">Latest transactions and enrollments</p>
-          </div>
-
-          {/* Recent Transactions */}
-          <div className="mb-8">
-            <RecentTransactionsChart transactions={transactions} />
-          </div>
-
-          {/* My Courses Section - Placeholder */}
-          <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">My Courses</h3>
-            {stats.publishedCourses === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200">
-                <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No courses yet. Start creating your first course!</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Course cards will be populated from separate API endpoint */}
-                <div className="bg-gray-50 rounded-xl border border-gray-200 p-6 text-center">
-                  <p className="text-gray-600">Course data will be loaded from courses endpoint</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
+        {/* SECTION 3: RECENT ACTIVITY */}
+        <RecentActivitySection
+          transactions={transactions}
+          courses={courses}
+          formatCurrency={formatCurrency}
+          onDeleteCourse={handleDeleteCourse}
+          onEditCourse={handleEditCourse}
+        />
       </main>
     </>
   )

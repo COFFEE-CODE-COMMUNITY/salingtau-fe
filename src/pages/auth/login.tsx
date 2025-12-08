@@ -37,9 +37,9 @@ export default function Login() {
 
     const init = async () => {
       const auth = await checkAuth()
-
       if (auth) {
         const me = await getMe()
+        console.log(me)
         if (me) {
           saveUser(me)
           navigate("/dashboard/student", { replace: true })
@@ -99,13 +99,15 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center">
-      <div className="bg-white bg-opacity-90 p-8 rounded-lg w-full max-w-sm text-center">
+    <div className="min-h-screen flex items-center justify-center bg-cover bg-center px-4">
+      <div className="bg-white/95 backdrop-blur p-6 sm:p-8 rounded-xl w-full max-w-md text-center shadow-md">
+
+        {/* Logo */}
         <div className="mb-6">
-          <img src="/SalingTau.png" alt="Logo" className="w-20 mx-auto" />
+          <img src="/SalingTau.png" alt="Logo" className="w-16 sm:w-20 mx-auto" />
         </div>
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} className="space-y-3">
           <TextField
             type="email"
             placeholder="Email"
@@ -125,8 +127,12 @@ export default function Login() {
             onChange={handleChange}
           />
 
-          <div className="text-right mt-2">
-            <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+          {/* Forgot Password */}
+          <div className="text-right">
+            <Link
+              to="/forgot-password"
+              className="text-xs sm:text-sm text-blue-600 hover:underline"
+            >
               Forgot password?
             </Link>
           </div>
@@ -134,18 +140,21 @@ export default function Login() {
           <button
             type="submit"
             disabled={loadingBtn}
-            className="w-full bg-blue-600 text-white p-3 mt-4 rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg mt-4 text-base sm:text-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loadingBtn ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <div className="my-4 text-gray-500">or</div>
+        <div className="my-4 text-gray-500 text-sm sm:text-base">or</div>
         <GoogleButton label="Login" />
 
-        <p className="mt-6 text-gray-700">
+        <p className="mt-6 text-gray-700 text-xs sm:text-sm">
           Don't have an account?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
+          <Link
+            to="/register"
+            className="text-blue-600 hover:underline font-medium"
+          >
             Register
           </Link>
         </p>
