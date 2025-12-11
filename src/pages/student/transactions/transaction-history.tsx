@@ -149,7 +149,7 @@ export default function TransactionHistory() {
 
         {/* Empty State */}
         {!loading && !error && transactions.length === 0 && (
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+          <div className="bg-white rounded-lg border border-gray-200 p-20 text-center">
             <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               No transactions yet

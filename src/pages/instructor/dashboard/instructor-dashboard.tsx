@@ -182,11 +182,7 @@ export default function InstructorDashboard() {
         if (response.status === 200 && response.data) {
           const transactionsData: Transaction[] = response.data
           setTransactions(transactionsData)
-
-          // Process data untuk statistics
           processStatistics(transactionsData)
-
-          // Process data untuk revenue chart
           processRevenueChart(transactionsData)
         } else {
           throw new Error('Failed to fetch transaction history')
@@ -203,23 +199,16 @@ export default function InstructorDashboard() {
   }, [user?.id])
 
   const processStatistics = (transactionsData: Transaction[]) => {
-    // Filter hanya transaksi yang sukses
     const completedTransactions = transactionsData.filter(
       t => t.status === 'SUCCESS' || t.status === 'COMPLETED' || t.status === 'completed'
     )
 
-    // Total Revenue (dalam Rupiah, asumsi currency IDR)
     const totalRevenue = completedTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
-
-    // Unique students
     const uniqueStudents = new Set(completedTransactions.map(t => t.user.id))
     const totalStudents = uniqueStudents.size
-
-    // Unique courses
     const uniqueCourses = new Set(completedTransactions.map(t => t.course.id))
     const totalEnrollments = completedTransactions.length
 
-    // Calculate growth (compare last 30 days vs previous 30 days)
     const now = new Date()
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
@@ -248,11 +237,11 @@ export default function InstructorDashboard() {
       totalStudents,
       studentGrowth,
       publishedCourses: uniqueCourses.size,
-      pendingCourses: 2, // Placeholder, bisa diganti dengan data real
+      pendingCourses: 2,
       totalCourses: uniqueCourses.size + 2,
-      averageRating: 4.7, // Placeholder, perlu endpoint terpisah untuk reviews
+      averageRating: 4.7,
       ratingChange: 0.3,
-      totalReviews: 542, // Placeholder
+      totalReviews: 542,
       totalEnrollments,
     })
   }
@@ -262,7 +251,6 @@ export default function InstructorDashboard() {
       t => t.status === 'SUCCESS' || t.status === 'COMPLETED' || t.status === 'completed'
     )
 
-    // Group by month (last 6 months)
     const monthlyData: { [key: string]: { revenue: number; students: Set<string> } } = {}
 
     const now = new Date()
@@ -284,7 +272,7 @@ export default function InstructorDashboard() {
 
     const chartData = Object.entries(monthlyData).map(([month, data]) => ({
       month,
-      revenue: Math.round(data.revenue / 1000), // Konversi ke ribuan
+      revenue: Math.round(data.revenue / 1000),
       students: data.students.size,
     }))
 
@@ -303,23 +291,19 @@ export default function InstructorDashboard() {
   const handleDeleteCourse = (courseId: string) => {
     if (window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
       setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId))
-      // TODO: Add API call to delete course
-      // await api.delete(`/courses/${courseId}`)
     }
   }
 
   const handleEditCourse = (courseId: string) => {
-    // TODO: Navigate to edit page or open edit modal
     console.log('Edit course:', courseId)
-    // Example: navigate(`/instructor/courses/${courseId}/edit`)
   }
 
   if (loading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <p className="mt-4 text-gray-600 font-medium">Loading dashboard...</p>
         </div>
       </div>
     )
@@ -327,12 +311,12 @@ export default function InstructorDashboard() {
 
   if (error) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 font-semibold">{error}</p>
+          <p className="text-red-600 font-semibold mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm"
           >
             Retry
           </button>
@@ -343,42 +327,53 @@ export default function InstructorDashboard() {
 
   return (
     <>
-      <header className="sticky top-0 bg-white/80 backdrop-blur-sm z-10 border-b border-gray-200">
-        <div className="h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+      {/* Header tanpa logo tambahan, sesuai aslinya tapi dengan container agar rapi */}
+      <header className="sticky top-0 bg-white/80 backdrop-blur-sm z-30 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-semibold text-gray-900">Dashboard</h2>
           <div className="flex items-center space-x-4" />
         </div>
       </header>
 
-      <main className="w-full bg-gray-50 min-h-screen">
-        {/* SECTION 1: OVERVIEW */}
-        <OverviewSection
-          name={name}
-          stats={stats}
-          formatCurrency={formatCurrency}
-        />
-
-        {/* SECTION 2: ANALYTICS CHARTS */}
-        <section className="px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Analytics Overview</h2>
-            <p className="text-gray-600 mt-1">Track your performance and growth metrics</p>
+      {/* Main Content dengan vertical spacing yang konsisten */}
+      <main className="min-h-screen bg-gray-50 pb-12">
+        <div className="max-w-7xl mx-auto space-y-8 pt-8">
+          
+          {/* SECTION 1: OVERVIEW */}
+          <div className="px-0"> {/* Wrapper untuk konsistensi layout */}
+            <OverviewSection
+              name={name}
+              stats={stats}
+              formatCurrency={formatCurrency}
+            />
           </div>
 
-          {/* Revenue Chart - Full Width */}
-          <div className="flex w-full">
-            <RevenueChart data={revenueData} />
-          </div>
-        </section>
+          {/* SECTION 2: ANALYTICS CHARTS */}
+          <section className="px-4 sm:px-6 lg:px-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Analytics Overview</h2>
+                <p className="text-sm text-gray-500 mt-1">Track your performance and growth metrics</p>
+              </div>
 
-        {/* SECTION 3: RECENT ACTIVITY */}
-        <RecentActivitySection
-          transactions={transactions}
-          courses={courses}
-          formatCurrency={formatCurrency}
-          onDeleteCourse={handleDeleteCourse}
-          onEditCourse={handleEditCourse}
-        />
+              <div className="w-full h-[400px]">
+                <RevenueChart data={revenueData} />
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION 3: RECENT ACTIVITY */}
+          <div className="px-0">
+             <RecentActivitySection
+                transactions={transactions}
+                courses={courses}
+                formatCurrency={formatCurrency}
+                onDeleteCourse={handleDeleteCourse}
+                onEditCourse={handleEditCourse}
+              />
+          </div>
+
+        </div>
       </main>
     </>
   )

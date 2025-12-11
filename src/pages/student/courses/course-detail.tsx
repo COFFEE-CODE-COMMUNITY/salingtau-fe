@@ -163,18 +163,21 @@ const CourseDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-gray-600 text-lg">Loading course details...</p>
+      <div className="flex justify-center items-center min-h-screen px-4">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-3"></div>
+          <p className="text-gray-600 text-sm sm:text-base lg:text-lg">Loading course details...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-screen px-4">
         <div className="text-center">
-          <p className="text-red-600 text-lg mb-2">Error loading course</p>
-          <p className="text-gray-600">{error}</p>
+          <p className="text-red-600 text-base sm:text-lg mb-2">Error loading course</p>
+          <p className="text-gray-600 text-sm sm:text-base">{error}</p>
         </div>
       </div>
     );
@@ -182,16 +185,16 @@ const CourseDetailPage = () => {
 
   if (!courseData) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-gray-600 text-lg">Course not found</p>
+      <div className="flex justify-center items-center min-h-screen px-4">
+        <p className="text-gray-600 text-sm sm:text-base lg:text-lg">Course not found</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="relative h-96 bg-gray-900">
+      {/* Hero Section - Responsif Height */}
+      <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 bg-gray-900">
         <img
           src={getCourseThumbnailUrl(courseData.thumbnail)}
           alt={courseData.title}
@@ -200,17 +203,19 @@ const CourseDetailPage = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 -mt-64 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 -mt-32 sm:-mt-48 md:-mt-56 lg:-mt-64 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* MAIN CONTENT */}
           <div className="lg:col-span-2">
             {/* Title & Meta */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{courseData.title}</h1>
+            <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 p-4 sm:p-6 mb-4 sm:mb-6">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 break-words">
+                {courseData.title}
+              </h1>
 
-              <div className="flex flex-wrap items-center gap-4 text-sm mb-4">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">
                 <div className="flex items-center gap-1">
-                  <Star className="text-yellow-400 fill-yellow-400" size={18} />
+                  <Star className="text-yellow-400 fill-yellow-400" size={16} />
                   <span className="font-semibold">{courseData.averageRating}</span>
                   <span className="text-gray-500">({courseData.totalReviews} ratings)</span>
                 </div>
@@ -218,37 +223,37 @@ const CourseDetailPage = () => {
                   <img
                     src={getProfilePictureUrl(courseData.instructor.profilePictures)}
                     alt={`${courseData.instructor.firstName} ${courseData.instructor.lastName}`}
-                    className="w-6 h-6 rounded-full"
+                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full ring-2 ring-gray-100"
                   />
-                  <span className="text-gray-700">
+                  <span className="text-gray-700 text-xs sm:text-sm">
                     {courseData.instructor.firstName} {courseData.instructor.lastName}
                   </span>
                 </div>
               </div>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
-                <Tag size={14} />
+              <div className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs sm:text-sm">
+                <Tag size={12} className="sm:w-3.5 sm:h-3.5" />
                 {courseData.category?.name || "Uncategorized"}
               </div>
             </div>
 
             {/* Description (Expandable Markdown) */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6 relative">
+            <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 p-4 sm:p-6 mb-4 sm:mb-6 relative">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-semibold text-gray-900">Description</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Description</h2>
                 <button
                   onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                  className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="flex items-center gap-1 text-blue-600 hover:text-blue-700 active:text-blue-800 text-xs sm:text-sm font-medium transition touch-manipulation"
                 >
                   {isDescriptionExpanded ? (
                     <>
-                      <ChevronUp size={18} />
-                      Show Less
+                      <ChevronUp size={16} className="sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">Show Less</span>
                     </>
                   ) : (
                     <>
-                      <ChevronDown size={18} />
-                      Show More
+                      <ChevronDown size={16} className="sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">Show More</span>
                     </>
                   )}
                 </button>
@@ -256,51 +261,53 @@ const CourseDetailPage = () => {
 
               <div className="relative">
                 <div
-                  className={`prose prose-sm max-w-none overflow-hidden transition-all duration-300 ${
-                    isDescriptionExpanded ? "max-h-full" : "max-h-40"
+                  className={`prose prose-sm max-w-none overflow-hidden transition-all duration-300 text-xs sm:text-sm ${
+                    isDescriptionExpanded ? "max-h-full" : "max-h-32 sm:max-h-40"
                   }`}
                 >
                   <ReactMarkdown>{courseData.description}</ReactMarkdown>
                 </div>
 
                 {!isDescriptionExpanded && (
-                  <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 bg-gradient-to-t from-white to-transparent pointer-events-none" />
                 )}
               </div>
             </div>
 
             {/* Course Content */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">Course Content</h2>
+            <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 p-4 sm:p-6 mb-4 sm:mb-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-4">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Course Content</h2>
                 <button
                   onClick={expandAllSections}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="text-blue-600 hover:text-blue-700 active:text-blue-800 text-xs sm:text-sm font-medium transition touch-manipulation"
                 >
                   Expand all sections
                 </button>
               </div>
 
-              <div className="text-sm text-gray-600 mb-4">
+              <div className="text-xs sm:text-sm text-gray-600 mb-4">
                 {courseData.sections?.length || 0} sections • {courseData.totalDuration || "N/A"} total length
               </div>
 
               <div className="space-y-2">
                 {courseData.sections?.map((section: any) => (
-                  <div key={section.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div key={section.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-sm transition-shadow duration-200">
                     <button
                       onClick={() => toggleSection(section.id)}
-                      className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                      className="w-full flex items-center justify-between p-3 sm:p-4 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         {expandedSections.includes(section.id) ? (
-                          <ChevronUp size={20} className="text-gray-600" />
+                          <ChevronUp size={18} className="text-gray-600 flex-shrink-0 sm:w-5 sm:h-5" />
                         ) : (
-                          <ChevronDown size={20} className="text-gray-600" />
+                          <ChevronDown size={18} className="text-gray-600 flex-shrink-0 sm:w-5 sm:h-5" />
                         )}
-                        <span className="font-medium text-gray-900">{section.title}</span>
+                        <span className="font-medium text-sm sm:text-base text-gray-900 text-left break-words">
+                          {section.title}
+                        </span>
                       </div>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-xs sm:text-sm text-gray-500 ml-2 flex-shrink-0">
                         {section.lectures?.length || 0} lectures
                       </span>
                     </button>
@@ -316,25 +323,25 @@ const CourseDetailPage = () => {
                           return (
                             <div
                               key={lecture.id}
-                              className="flex items-center justify-between p-4 border-t border-gray-100 hover:bg-gray-50 transition-colors"
+                              className="flex items-center justify-between p-3 sm:p-4 border-t border-gray-100 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                             >
                               <Link
                                 to={`/dashboard/student/course/play/${courseId}`}
-                                className="flex items-center gap-3"
+                                className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 touch-manipulation"
                               >
                                 {getLectureIcon(lecture.type)}
-                                <span className="text-gray-700">{lecture.title}</span>
+                                <span className="text-xs sm:text-sm text-gray-700 truncate">{lecture.title}</span>
                               </Link>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-2">
                                 {lecture.duration !== 0 && (
-                                  <span className="text-sm text-gray-500">
+                                  <span className="text-xs sm:text-sm text-gray-500">
                                     {formatDuration(lecture.duration)}
                                   </span>
                                 )}
                                 {lecture.completed ? (
-                                  <CheckCircle size={18} className="text-green-600" />
+                                  <CheckCircle size={16} className="text-green-600 sm:w-4 sm:h-4" />
                                 ) : (
-                                  <CircularProgressBar value={progress} size={18} strokeWidth={2} />
+                                  <CircularProgressBar value={progress} size={16} strokeWidth={2} />
                                 )}
                               </div>
                             </div>
@@ -358,14 +365,14 @@ const CourseDetailPage = () => {
 
           {/* SIDEBAR - Price Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6 sticky top-4">
+            <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 p-4 sm:p-6 sticky top-4">
               <img
                 src={getCourseThumbnailUrl(courseData.thumbnail)}
                 alt={courseData.title}
-                className="w-full h-48 object-cover rounded-lg mb-4"
+                className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-lg mb-3 sm:mb-4 hover:scale-[1.02] transition-transform duration-300"
               />
 
-              <div className="text-3xl font-bold text-gray-900 mb-4">
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                 {courseData.price === 0 ? (
                   <span className="text-green-600">Free</span>
                 ) : (
@@ -383,22 +390,22 @@ const CourseDetailPage = () => {
                   }
                 }}
                 disabled={isCheckingOut}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium mb-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 text-white py-2.5 sm:py-3 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 font-medium text-sm sm:text-base mb-3 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-[0.98] touch-manipulation"
               >
                 {isCheckingOut ? "Processing..." : (courseData.price === 0 ? "Enroll Now" : "Buy Now")}
               </button>
 
-              <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 flex items-center gap-2">
-                    <Clock size={16} />
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200 space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
+                  <span className="text-gray-600 flex items-center gap-1.5 sm:gap-2">
+                    <Clock size={14} className="sm:w-4 sm:h-4" />
                     Duration
                   </span>
                   <span className="font-medium text-gray-900">{courseData.totalDuration || "N/A"}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 flex items-center gap-2">
-                    <Star size={16} />
+                <div className="flex items-center justify-between text-xs sm:text-sm">
+                  <span className="text-gray-600 flex items-center gap-1.5 sm:gap-2">
+                    <Star size={14} className="sm:w-4 sm:h-4" />
                     Rating
                   </span>
                   <span className="font-medium text-gray-900">{courseData.averageRating} / 5.0</span>
@@ -406,19 +413,19 @@ const CourseDetailPage = () => {
               </div>
 
               {/* Instructor Info */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Instructor</h3>
-                <div className="flex items-start gap-3">
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+                <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">Instructor</h3>
+                <div className="flex items-start gap-2 sm:gap-3">
                   <img
                     src={getProfilePictureUrl(courseData.instructor.profilePictures)}
                     alt={`${courseData.instructor.firstName} ${courseData.instructor.lastName}`}
-                    className="w-12 h-12 rounded-full"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full ring-2 ring-gray-100 hover:ring-blue-300 transition-all"
                   />
-                  <div>
-                    <p className="font-medium text-gray-900">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm sm:text-base text-gray-900 truncate">
                       {courseData.instructor.firstName} {courseData.instructor.lastName}
                     </p>
-                    <p className="text-xs text-gray-600 mt-1">{courseData.instructor.headline}</p>
+                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">{courseData.instructor.headline}</p>
                   </div>
                 </div>
               </div>

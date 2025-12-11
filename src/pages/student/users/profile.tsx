@@ -173,34 +173,34 @@ const UserProfilePage = () => {
   ].filter(link => link.url);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-8 px-3 sm:px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Success Message */}
+        {/* Success Message - Responsif */}
         {saveSuccess && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800 text-sm font-medium">
+          <div className="mb-4 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg shadow-sm animate-slide-down">
+            <p className="text-green-800 text-xs sm:text-sm font-medium">
               ✅ Profile updated successfully!
             </p>
           </div>
         )}
 
-        {/* Error Message */}
+        {/* Error Message - Responsif */}
         {saveError && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800 text-sm font-medium">
+          <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg shadow-sm animate-slide-down">
+            <p className="text-red-800 text-xs sm:text-sm font-medium break-words">
               ❌ {saveError}
             </p>
           </div>
         )}
 
-        {/* Profile Picture Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        {/* Profile Picture Section - Responsif */}
+        <div className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-4 sm:p-6 mb-4 sm:mb-6">
           <div className="flex flex-col items-center">
             <div
               className={`relative group ${user.id !== 'fallback-user' ? 'cursor-pointer' : ''}`}
               onClick={handlePhotoClick}
             >
-              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   <img
                     src={profilePictureUrl}
                     alt={`${user.firstName} ${user.lastName}`}
@@ -212,13 +212,13 @@ const UserProfilePage = () => {
               </div>
 
 
-              {/* Hover Overlay */}
+              {/* Hover Overlay - dengan scale effect */}
               {user.id !== 'fallback-user' && (
-                <div className="absolute inset-0 bg-gray-800 bg-opacity-0 group-hover:bg-opacity-60 rounded-full transition-all duration-300 flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-gray-800 bg-opacity-0 group-hover:bg-opacity-70 rounded-full transition-all duration-300 flex items-center justify-center">
                   {isUploadingPhoto ? (
-                    <Loader2 className="text-white animate-spin" size={32} />
+                    <Loader2 className="text-white animate-spin" size={28} />
                   ) : (
-                    <Camera className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" size={32} />
+                    <Camera className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:scale-110" size={28} />
                   )}
                 </div>
               )}
@@ -233,46 +233,46 @@ const UserProfilePage = () => {
               className="hidden"
             />
 
-            <h1 className="mt-4 text-2xl font-bold text-gray-900">
+            <h1 className="mt-3 sm:mt-4 text-xl sm:text-2xl font-bold text-gray-900 text-center break-words px-4">
               {user.firstName} {user.lastName}
             </h1>
             {user.headline && (
-              <p className="text-gray-600 text-center mt-1">{user.headline}</p>
+              <p className="text-sm sm:text-base text-gray-600 text-center mt-1 px-4 break-words">{user.headline}</p>
             )}
 
             {user.id !== 'fallback-user' && (
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-400 mt-2 hover:text-gray-600 transition-colors">
                 Click photo to change
               </p>
             )}
           </div>
         </div>
 
-        {/* Profile Information Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Informasi Profile</h2>
+        {/* Profile Information Section - Responsif */}
+        <div className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Informasi Profile</h2>
             {user.id !== 'fallback-user' && (
               !isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 touch-manipulation"
                 >
                   Edit Profile
                 </button>
               ) : (
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                   <button
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 sm:flex-none px-4 py-2 bg-gray-200 text-gray-700 text-sm sm:text-base rounded-lg hover:bg-gray-300 active:bg-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   >
                     Batal
                   </button>
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md hover:shadow-lg touch-manipulation"
                   >
                     {isSaving && <Loader2 className="animate-spin" size={16} />}
                     {isSaving ? 'Menyimpan...' : 'Simpan'}
@@ -282,10 +282,10 @@ const UserProfilePage = () => {
             )}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* First Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Nama Depan
               </label>
               {isEditing ? (
@@ -294,17 +294,17 @@ const UserProfilePage = () => {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all touch-manipulation"
                   required
                 />
               ) : (
-                <p className="text-gray-900">{user.firstName}</p>
+                <p className="text-sm sm:text-base text-gray-900 break-words">{user.firstName}</p>
               )}
             </div>
 
             {/* Last Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Nama Belakang
               </label>
               {isEditing ? (
@@ -313,26 +313,26 @@ const UserProfilePage = () => {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all touch-manipulation"
                   required
                 />
               ) : (
-                <p className="text-gray-900">{user.lastName}</p>
+                <p className="text-sm sm:text-base text-gray-900 break-words">{user.lastName}</p>
               )}
             </div>
 
             {/* Email - Read Only */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Email
               </label>
-              <p className="text-gray-900">{user.email}</p>
+              <p className="text-sm sm:text-base text-gray-900 break-all">{user.email}</p>
               <p className="text-xs text-gray-500 mt-1">Email tidak dapat diubah</p>
             </div>
 
             {/* Headline */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Headline
               </label>
               {isEditing ? (
@@ -341,18 +341,18 @@ const UserProfilePage = () => {
                   name="headline"
                   value={formData.headline || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all touch-manipulation"
                   placeholder="Tambahkan headline singkat"
                   maxLength={100}
                 />
               ) : (
-                <p className="text-gray-900">{user.headline || '-'}</p>
+                <p className="text-sm sm:text-base text-gray-900 break-words">{user.headline || '-'}</p>
               )}
             </div>
 
             {/* Biography */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Biografi
               </label>
               {isEditing ? (
@@ -361,29 +361,29 @@ const UserProfilePage = () => {
                   value={formData.biography || ''}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none touch-manipulation"
                   placeholder="Ceritakan tentang diri Anda"
                   maxLength={500}
                 />
               ) : (
-                <p className="text-gray-900 whitespace-pre-wrap">{user.biography || '-'}</p>
+                <p className="text-sm sm:text-base text-gray-900 whitespace-pre-wrap break-words">{user.biography || '-'}</p>
               )}
             </div>
 
             {/* Social Links */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 Social Media
               </label>
               {isEditing ? (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   <input
                     type="url"
                     name="websiteUrl"
                     value={formData.websiteUrl || ''}
                     onChange={handleInputChange}
                     placeholder="Website URL"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all touch-manipulation"
                   />
                   <input
                     type="url"
@@ -391,7 +391,7 @@ const UserProfilePage = () => {
                     value={formData.facebookUrl || ''}
                     onChange={handleInputChange}
                     placeholder="Facebook URL"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all touch-manipulation"
                   />
                   <input
                     type="url"
@@ -399,7 +399,7 @@ const UserProfilePage = () => {
                     value={formData.instagramUrl || ''}
                     onChange={handleInputChange}
                     placeholder="Instagram URL"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all touch-manipulation"
                   />
                   <input
                     type="url"
@@ -407,7 +407,7 @@ const UserProfilePage = () => {
                     value={formData.linkedinUrl || ''}
                     onChange={handleInputChange}
                     placeholder="LinkedIn URL"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all touch-manipulation"
                   />
                   <input
                     type="url"
@@ -415,7 +415,7 @@ const UserProfilePage = () => {
                     value={formData.xUrl || ''}
                     onChange={handleInputChange}
                     placeholder="X (Twitter) URL"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all touch-manipulation"
                   />
                   <input
                     type="url"
@@ -423,7 +423,7 @@ const UserProfilePage = () => {
                     value={formData.youtubeUrl || ''}
                     onChange={handleInputChange}
                     placeholder="YouTube URL"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all touch-manipulation"
                   />
                   <input
                     type="url"
@@ -431,11 +431,11 @@ const UserProfilePage = () => {
                     value={formData.tiktokUrl || ''}
                     onChange={handleInputChange}
                     placeholder="TikTok URL"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all touch-manipulation"
                   />
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   {socialLinks.length > 0 ? (
                     socialLinks.map((link, index) => {
                       const Icon = link.icon;
@@ -445,27 +445,27 @@ const UserProfilePage = () => {
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-lg transition-all duration-200 hover:shadow-md active:scale-95 touch-manipulation"
                         >
-                          <Icon size={18} className="text-gray-600" />
-                          <span className="text-sm text-gray-700">{link.name}</span>
+                          <Icon size={16} className="text-gray-600 flex-shrink-0 sm:w-4 sm:h-4" />
+                          <span className="text-xs sm:text-sm text-gray-700">{link.name}</span>
                         </a>
                       );
                     })
                   ) : (
-                    <p className="text-gray-500 text-sm">Tidak ada social media yang ditambahkan</p>
+                    <p className="text-gray-500 text-xs sm:text-sm">Tidak ada social media yang ditambahkan</p>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Account Info */}
-            <div className="pt-4 border-t border-gray-200">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">Informasi Akun</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            {/* Account Info - Responsif */}
+            <div className="pt-3 sm:pt-4 border-t border-gray-200">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">Informasi Akun</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                 <div>
                   <span className="text-gray-500">Status:</span>
-                  <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  <span className={`ml-2 inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     user.status === 'active' ? 'bg-green-100 text-green-800' :
                       user.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
                         'bg-red-100 text-red-800'
@@ -477,13 +477,13 @@ const UserProfilePage = () => {
                   <span className="text-gray-500">Bahasa:</span>
                   <span className="ml-2 text-gray-900">{user.language}</span>
                 </div>
-                <div>
+                <div className="sm:col-span-2">
                   <span className="text-gray-500">Role:</span>
                   <span className="ml-2 text-gray-900">{user.roles.join(', ')}</span>
                 </div>
-                <div>
+                <div className="sm:col-span-2">
                   <span className="text-gray-500">Bergabung sejak:</span>
-                  <span className="ml-2 text-gray-900">
+                  <span className="ml-2 text-gray-900 break-words">
                     {new Date(user.createdAt).toLocaleDateString('id-ID', {
                       year: 'numeric',
                       month: 'long',
@@ -492,9 +492,9 @@ const UserProfilePage = () => {
                   </span>
                 </div>
                 {user.lastLoggedInAt && (
-                  <div>
+                  <div className="sm:col-span-2">
                     <span className="text-gray-500">Terakhir login:</span>
-                    <span className="ml-2 text-gray-900">
+                    <span className="ml-2 text-gray-900 break-words">
                       {new Date(user.lastLoggedInAt).toLocaleDateString('id-ID', {
                         year: 'numeric',
                         month: 'long',
@@ -508,6 +508,23 @@ const UserProfilePage = () => {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes slide-down {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-slide-down {
+          animation: slide-down 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };

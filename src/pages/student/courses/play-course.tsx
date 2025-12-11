@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type JSXElementConstructor, type Key, type ReactElement, type ReactNode, type ReactPortal} from "react";
 import {useParams} from "react-router-dom";
 import Hls from "hls.js";
-import {Code, FileText, PlayCircle, ExternalLink, Clock} from "lucide-react";
+import {Code, FileText, PlayCircle, ExternalLink, Clock, ChevronLeft, Menu} from "lucide-react";
 import Article from "./article.tsx";
 import {FileDownloadDialog} from "@/components/ui/file-download-dialog.tsx";
 import {ExternalLinkDialog} from "@/components/ui/external-link-dialog.tsx";
@@ -18,6 +18,7 @@ const PlayCourse = () => {
   const {courseId} = useParams<{ courseId: string }>();
   const { course, loading, error } = useCourseDetail(courseId);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState<{
     type: 'file' | 'external' | null;
     lessonId: string | null;
@@ -216,23 +217,27 @@ const PlayCourse = () => {
       setOpenDialog({type: 'external', lessonId});
     } else {
       setActiveLessonId(lessonId);
+      setIsSidebarOpen(false); // Close sidebar on mobile after selecting
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-600">Loading course...</p>
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600 mb-3 sm:mb-4"></div>
+          <p className="text-sm sm:text-base text-gray-600">Loading course...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen px-4">
         <div className="text-center">
-          <p className="text-red-600 text-lg mb-2">Error loading course</p>
-          <p className="text-gray-600">{error}</p>
+          <p className="text-base sm:text-lg text-red-600 mb-2">Error loading course</p>
+          <p className="text-sm sm:text-base text-gray-600">{error}</p>
         </div>
       </div>
     );
@@ -240,8 +245,8 @@ const PlayCourse = () => {
 
   if (!course) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-600">Course not found.</p>
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <p className="text-sm sm:text-base text-gray-600">Course not found.</p>
       </div>
     );
   }
@@ -252,15 +257,15 @@ const PlayCourse = () => {
   const getLessonIcon = (type: string) => {
     switch (type.toUpperCase()) {
       case "VIDEO":
-        return <PlayCircle className="w-5 h-5"/>;
+        return <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5"/>;
       case "FILE":
-        return <FileText className="w-5 h-5"/>;
+        return <FileText className="w-4 h-4 sm:w-5 sm:h-5"/>;
       case "ARTICLE":
-        return <Code className="w-5 h-5"/>;
+        return <Code className="w-4 h-4 sm:w-5 sm:h-5"/>;
       case "EXTERNAL":
-        return <ExternalLink className="w-5 h-5"/>;
+        return <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5"/>;
       default:
-        return <PlayCircle className="w-5 h-5"/>;
+        return <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5"/>;
     }
   };
 
@@ -291,7 +296,7 @@ const PlayCourse = () => {
   const currentExternalLesson = activeLessonId ? allLessons.find((l: any) => l.id === openDialog.lessonId) : null;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
       {/* Main Content */}
       <div className="flex-1 bg-white">
         {activeLesson?.type.toUpperCase() === "ARTICLE" ? (
@@ -309,36 +314,36 @@ const PlayCourse = () => {
               </video>
             </div>
 
-            <div className="px-10 py-8">
-              <div className="text-blue-600 text-sm font-semibold uppercase tracking-wide mb-3">
+            <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-4 sm:py-6 md:py-8">
+              <div className="text-blue-600 text-xs sm:text-sm font-semibold uppercase tracking-wide mb-2 sm:mb-3">
                 {course.category?.name || "Course"}
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 leading-tight break-words">
                 {course.title}
               </h1>
-              <p className="text-gray-600 text-base leading-relaxed">
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 {activeLesson
                   ? `Now Playing: ${activeLesson.title}`
                   : "Select a lesson to start learning."}
               </p>
             </div>
 
-            <div className="px-10 py-6 border-t border-gray-200 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-4 sm:py-5 md:py-6 border-t border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
                 <img
                   src={getProfilePictureUrl(course.instructor.profilePictures)}
                   alt={`${course.instructor.firstName} ${course.instructor.lastName}`}
-                  className="w-10 h-10 rounded-full object-cover"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-gray-100"
                 />
-                <div>
-                  <div className="text-base font-semibold text-gray-900">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm sm:text-base font-semibold text-gray-900 truncate">
                     {course.instructor.firstName} {course.instructor.lastName}
                   </div>
-                  <div className="text-sm text-gray-500">Instructor</div>
+                  <div className="text-xs sm:text-sm text-gray-500">Instructor</div>
                 </div>
               </div>
               <button
-                className="px-7 py-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                className="w-full sm:w-auto px-5 sm:px-6 md:px-7 py-2.5 sm:py-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.98] touch-manipulation">
                 Done & Continue
               </button>
             </div>
@@ -346,12 +351,42 @@ const PlayCourse = () => {
         )}
       </div>
 
+      {/* Mobile Sidebar Toggle Button */}
+      <button
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        className="lg:hidden fixed bottom-4 right-4 z-30 p-3 sm:p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 active:scale-95 touch-manipulation"
+      >
+        {isSidebarOpen ? <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
+      </button>
+
+      {/* Overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          onClick={() => setIsSidebarOpen(false)}
+          className="lg:hidden fixed inset-0 bg-black/50 z-20 backdrop-blur-sm transition-opacity"
+        />
+      )}
+
       {/* Sidebar with Accordion */}
-      <aside className="w-96 bg-gray-50 border-l border-gray-200 overflow-y-auto">
-        <div className="px-6 py-6 border-b border-gray-200 bg-white sticky top-0 z-10">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <aside className={`
+        fixed lg:static inset-y-0 right-0 z-30
+        w-80 sm:w-96 bg-gray-50 border-l border-gray-200 
+        transform transition-transform duration-300 ease-in-out
+        lg:transform-none
+        ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+        overflow-y-auto
+        shadow-xl lg:shadow-none
+      `}>
+        <div className="px-4 sm:px-6 py-4 sm:py-6 border-b border-gray-200 bg-white sticky top-0 z-10 flex items-center justify-between">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
             Course Content
           </h2>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
+          </button>
         </div>
 
         <Accordion type="multiple" defaultValue={course.sections?.map((s: { id: any; }) => s.id) || []} className="w-full">
@@ -360,9 +395,9 @@ const PlayCourse = () => {
 
             return (
               <AccordionItem key={section.id} value={String(section?.id ?? "")} className="border-b">
-                <AccordionTrigger className="px-6 py-4 hover:bg-gray-100 hover:no-underline">
-                  <div className="flex flex-col items-start text-left w-full">
-                    <h3 className="text-sm font-semibold text-gray-900">
+                <AccordionTrigger className="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-100 hover:no-underline transition-colors touch-manipulation">
+                  <div className="flex flex-col items-start text-left w-full pr-2">
+                    <h3 className="text-xs sm:text-sm font-semibold text-gray-900 break-words">
                       {section.title}
                     </h3>
                     <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
@@ -387,22 +422,22 @@ const PlayCourse = () => {
                       <div
                         key={lesson.id}
                         onClick={() => handleLessonClick(lesson.id, lesson.type)}
-                        className={`px-6 py-3 border-t border-gray-200 cursor-pointer transition-colors flex items-center gap-3 ${
+                        className={`px-4 sm:px-6 py-3 border-t border-gray-200 cursor-pointer transition-all duration-200 flex items-center gap-2 sm:gap-3 touch-manipulation active:scale-[0.98] ${
                           isActive
-                            ? "bg-blue-50 border-l-4 border-l-blue-600"
+                            ? "bg-blue-50 border-l-4 border-l-blue-600 shadow-sm"
                             : "hover:bg-gray-100"
                         }`}
                       >
-                        <div className={isActive ? "text-blue-600" : "text-gray-600"}>
+                        <div className={`flex-shrink-0 ${isActive ? "text-blue-600" : "text-gray-600"}`}>
                           {getLessonIcon(lesson.type)}
                         </div>
-                        <div className="flex-1">
-                          <div className={`text-sm font-medium ${isActive ? "text-blue-600" : "text-gray-900"}`}>
+                        <div className="flex-1 min-w-0">
+                          <div className={`text-xs sm:text-sm font-medium break-words ${isActive ? "text-blue-600" : "text-gray-900"}`}>
                             {lesson.title}
                           </div>
                           {lessonTypeUpper === "VIDEO" && lesson.duration && (
                             <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                              <Clock className="w-3 h-3" />
+                              <Clock className="w-3 h-3 flex-shrink-0" />
                               <span>
                                 {Math.floor(lesson.duration / 60)}:
                                 {String(lesson.duration % 60).padStart(2, '0')}
