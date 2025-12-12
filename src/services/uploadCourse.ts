@@ -24,6 +24,18 @@ export async function uploadLectureContent(courseId: string, lectureId: string, 
   })
 }
 
+interface VideoItem {
+  id: string;
+  title: string;
+  file: File | null;
+}
+
+interface Section {
+  id: string;
+  name: string;
+  videos: VideoItem[];
+}
+
 export function useUploadCourse() {
   const uploadCourse = async (formData: { 
     title: string; 
@@ -32,9 +44,12 @@ export function useUploadCourse() {
     language: string;
     category: { name: string }; 
     thumbnail: File | null; 
-    video: File | null;
-  }) => {
+    sections: Section[];
+  }, onProgress?: (message: string) => void) => {
     try {
+      console.log("🚀 Starting course upload process...");
+      onProgress?.("Creating course...");
+      
       // Step 1: Create course
       const { data: course } = await createCourse({
         title: formData.title,
@@ -48,34 +63,54 @@ export function useUploadCourse() {
 
       // Step 2: Upload thumbnail
       if (formData.thumbnail) {
+        onProgress?.("Uploading thumbnail...");
         await uploadThumbnail(courseId, formData.thumbnail)
         console.log("✅ Thumbnail uploaded")
       }
 
-      // Step 3: Create section (hardcoded as requested)
-      const { data: section } = await createSection(courseId, {
-        title: "Section 1",
-        displayOrder: 1
-      })
-      const sectionId = section.id
-      console.log("✅ Section created:", sectionId)
+      // Step 3: Create sections and their videos
+      const totalSections = formData.sections.length;
+      const totalVideos = formData.sections.reduce((sum, section) => sum + section.videos.length, 0);
+      let uploadedVideos = 0;
+      
+      for (let sectionIndex = 0; sectionIndex < formData.sections.length; sectionIndex++) {
+        const section = formData.sections[sectionIndex];
+        onProgress?.(`Creating section ${sectionIndex + 1}/${totalSections}: ${section.name}`);
+        console.log(`📁 Creating section ${sectionIndex + 1}: ${section.name}`);
+        
+        const { data: createdSection } = await createSection(courseId, {
+          title: section.name,
+          displayOrder: sectionIndex + 1
+        })
+        const sectionId = createdSection.id
+        console.log(`✅ Section created:`, sectionId)
 
-      // Step 4: Create lecture
-      const { data: lecture } = await createLecture(courseId, sectionId, {
-        title: "Lesson 1",
-        description: "First lesson of the course",
-        type: "VIDEO",
-        displayOrder: 1
-      })
-      const lectureId = lecture.id
-      console.log("✅ Lecture created:", lectureId)
+        // Create lectures for this section
+        for (let videoIndex = 0; videoIndex < section.videos.length; videoIndex++) {
+          const video = section.videos[videoIndex];
+          onProgress?.(`Uploading video ${uploadedVideos + 1}/${totalVideos}: ${video.title}`);
+          console.log(`🎥 Creating lecture ${videoIndex + 1}: ${video.title}`);
+          
+          const { data: lecture } = await createLecture(courseId, sectionId, {
+            title: video.title,
+            description: `Lecture ${videoIndex + 1} of ${section.name}`,
+            type: "VIDEO",
+            displayOrder: videoIndex + 1
+          })
+          const lectureId = lecture.id
+          console.log(`✅ Lecture created:`, lectureId)
 
-      // Step 5: Upload video content
-      if (formData.video) {
-        await uploadLectureContent(courseId, lectureId, formData.video)
-        console.log("✅ Video uploaded")
+          // Upload video content
+          if (video.file) {
+            console.log(`📤 Uploading video content for: ${video.title}`);
+            await uploadLectureContent(courseId, lectureId, video.file)
+            console.log(`✅ Video uploaded for: ${video.title}`);
+          }
+          uploadedVideos++;
+        }
       }
 
+      console.log("🎉 Course upload completed successfully!");
       return course
     } catch (error) {
       console.error("❌ Upload course error:", error)
