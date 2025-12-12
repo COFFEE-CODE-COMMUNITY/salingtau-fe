@@ -129,7 +129,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, onFileChange, currentFil
 
 export default function CreateCourse() {
   const navigate = useNavigate();
-  useUploadCourse();
+  const { uploadCourse } = useUploadCourse();
   const [metadata, setMetadata] = useState<CourseMetadata>({
     title: "",
     description: "",
@@ -157,6 +157,7 @@ export default function CreateCourse() {
   ]);
 
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
 
   const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -244,24 +245,77 @@ export default function CreateCourse() {
   };
 
   const handleSubmit = async () => {
-    if (!metadata.title || !metadata.category.name) { alert("Please fill in all required fields (Title and Category)."); return; }
-    if (!metadata.description) { alert("Please provide a course description."); return; }
-    if (!thumbnail) { alert("Please upload a course thumbnail."); return; }
+    // Validation
+    if (!metadata.title || !metadata.category.name) { 
+      alert("Please fill in all required fields (Title and Category)."); 
+      return; 
+    }
+    if (!metadata.description) { 
+      alert("Please provide a course description."); 
+      return; 
+    }
+    if (!thumbnail) { 
+      alert("Please upload a course thumbnail."); 
+      return; 
+    }
+    
+    // Validate sections and videos
     for (const section of sections) {
-      if (!section.name.trim()) { alert(`Section name cannot be empty`); return; }
+      if (!section.name.trim()) { 
+        alert(`Section name cannot be empty`); 
+        return; 
+      }
       for (const video of section.videos) {
-        if (!video.title.trim()) { alert(`Please fill in all video titles in ${section.name}`); return; }
-        if (!video.file) { alert(`Please upload all videos in ${section.name}`); return; }
+        if (!video.title.trim()) { 
+          alert(`Please fill in all video titles in ${section.name}`); 
+          return; 
+        }
+        if (!video.file) { 
+          alert(`Please upload all videos in ${section.name}`); 
+          return; 
+        }
       }
     }
+    
     setIsUploading(true);
+    setUploadProgress("Preparing course data...");
+    
     try {
-      console.log("Sections:", sections);
-      alert("Upload functionality needs to be implemented in the backend to handle multiple sections and videos");
+      setUploadProgress("Creating course...");
+      
+      // Upload course with all sections and videos
+      const course = await uploadCourse({
+        title: metadata.title,
+        description: metadata.description,
+        price: metadata.price,
+        language: metadata.language,
+        category: metadata.category,
+        thumbnail: thumbnail,
+        sections: sections
+      }, setUploadProgress);
+      
+      setUploadProgress("Course published successfully!");
+      console.log("✅ Course created successfully:", course);
+      
+      // Show success message for a moment before navigating
+      setTimeout(() => {
+        setIsUploading(false);
+        setUploadProgress("");
+        navigate("/dashboard/instructor");
+      }, 1500);
+      
     } catch (error: any) {
-      alert(`Failed to create course: ${error.message}`);
+      console.error("❌ Failed to create course:", error);
+      setUploadProgress("");
+      
+      const errorMessage = error?.response?.data?.message || error?.message || "Unknown error occurred";
+      alert(`Failed to create course: ${errorMessage}`);
+      
     } finally {
-      setIsUploading(false);
+      // Don't reset uploading state immediately if successful, let the timeout handle navigation
+      if (uploadProgress !== "Course published successfully!") {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -557,7 +611,7 @@ export default function CreateCourse() {
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4">
             <button
               type="button"
-              onClick={() => navigate("/dashboard/instructor/courses")}
+              onClick={() => navigate("/dashboard/instructor")}
               className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition-all"
               disabled={isUploading}
             >
@@ -575,7 +629,7 @@ export default function CreateCourse() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Publishing...
+                    {uploadProgress || "Publishing..."}
                   </>
               ) : (
                   <>
