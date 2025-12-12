@@ -139,13 +139,7 @@ export default function MyCourse() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {sortedCourses.map((course) => (
-                <div
-                  key={course.id}
-                  onClick={() => navigate(`/dashboard/student/course/play/${course.id}`)}
-                  className="cursor-pointer transform hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200 touch-manipulation"
-                >
-                  <CourseCard course={course} />
-                </div>
+                <CourseCard course={course} />
               ))}
             </div>
           </div>
