@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type JSXElementConstructor, type Key, type ReactElement, type ReactNode, type ReactPortal} from "react";
+import { useEffect, useRef, useState } from "react";
 import {useParams} from "react-router-dom";
 import Hls from "hls.js";
 import {Code, FileText, PlayCircle, ExternalLink, Clock, ChevronLeft, Menu} from "lucide-react";
@@ -47,14 +47,7 @@ const PlayCourse = () => {
         console.warn("⚠️ No lessons found in course sections");
       }
     } else {
-      console.warn("⚠️ Course has no sections, loading video directly with fallback URL");
-      // Fallback: Load video directly if no sections
-      if (course) {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8081/api/v1"
-        const testUrl = `${baseUrl}/files/courses/1c0e7702-d645-415f-9338-96bc89a98e22/master.m3u8`
-        console.log("🧪 Loading fallback video URL:", testUrl);
-        setTimeout(() => loadVideo(testUrl), 500);
-      }
+      console.warn("⚠️ Course has no sections or lessons");
     }
   }, [course]);
 
@@ -73,7 +66,7 @@ const PlayCourse = () => {
       return;
     }
 
-    const allLessons = course?.sections?.flatMap((s: { lectures: any; }) => s.lectures || []) || [];
+    const allLessons = course?.sections?.flatMap((s) => s.lectures || []) || [];
     console.log("🔍 Searching for lesson with ID:", activeLessonId);
     console.log("🔍 Available lessons:", allLessons.map((l: any) => ({ id: l.id, title: l.title })));
     
@@ -99,12 +92,7 @@ const PlayCourse = () => {
         loadVideo(videoUrl);
       } else {
         console.warn("⚠️ No video URL found for this lesson");
-        
-        // Fallback: Try hardcoded URL for testing
-        const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8081/api/v1"
-        const testUrl = `${baseUrl}/files/courses/1c0e7702-d645-415f-9338-96bc89a98e22/master.m3u8`
-        console.log("🧪 Using fallback test URL:", testUrl);
-        loadVideo(testUrl);
+        console.log("🔴 Cannot load video - no valid URL available");
       }
     } else {
       console.error("❌ Video element not ready");
@@ -251,7 +239,7 @@ const PlayCourse = () => {
     );
   }
 
-  const allLessons = course.sections?.flatMap((s: { lectures: any; }) => s.lectures || []) || [];
+  const allLessons = course.sections?.flatMap((s) => s.lectures || []) || [];
   const activeLesson = allLessons.find((l: { id: string | null; }) => l.id === activeLessonId);
 
   const getLessonIcon = (type: string) => {
@@ -390,7 +378,7 @@ const PlayCourse = () => {
         </div>
 
         <Accordion type="multiple" defaultValue={course.sections?.map((s: { id: any; }) => s.id) || []} className="w-full">
-          {course.sections?.map((section: { id: Key | null | undefined; title: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; lectures: any[]; }) => {
+          {course.sections?.map((section) => {
             const stats = getSectionStats(section.id);
 
             return (
