@@ -1,4 +1,5 @@
-import { useState } from 'react'
+
+import { useState, useEffect } from 'react'
 import { Rating, Star } from '@smastrom/react-rating'
 import '@smastrom/react-rating/style.css'
 
@@ -25,6 +26,11 @@ export const StarRating = ({
                            }: StarRatingProps) => {
   const [rating, setRating] = useState(initialRating)
 
+  // Update rating when initialRating changes
+  useEffect(() => {
+    setRating(initialRating)
+  }, [initialRating])
+
   const handleRating = (newRating: number) => {
     setRating(newRating)
     onRatingChange?.(newRating)
@@ -39,6 +45,9 @@ export const StarRating = ({
         style={{ maxWidth: size * 5 + 10 }}
         itemStyles={customStyles}
         halfFillMode="svg"
+        transition="zoom"
+        items={5}
+        spaceBetween="small"
       />
       {showRatingText && (
         <span className="text-sm font-semibold text-gray-700">

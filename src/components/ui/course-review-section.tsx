@@ -15,33 +15,44 @@ interface Review {
   comment: string;
 }
 
+interface RatingStats {
+  totalReview: number;
+  averageRating: number;
+  stars: {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+  };
+  percentage: {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+  };
+}
+
 interface CourseReviewsSectionProps {
   courseId: string;
-  averageRating: number;
-  totalRatings: number;
-  ratingDistribution: {
-    5: number;
-    4: number;
-    3: number;
-    2: number;
-    1: number;
-  };
 }
 
 const PAGE_SIZE = 5;
 
-const CourseReviewsSection = ({
-                                courseId,
-                                averageRating,
-                                totalRatings,
-                                ratingDistribution,
-                              }: CourseReviewsSectionProps) => {
+const CourseReviewsSection = ({ courseId }: CourseReviewsSectionProps) => {
   const [sortOrder, setSortOrder] = useState("descending");
   const [hasPurchased, setHasPurchased] = useState(false);
   const [isCheckingPurchase, setIsCheckingPurchase] = useState(true);
   const [userReview, setUserReview] = useState<Review | null>(null);
   const [otherReviews, setOtherReviews] = useState<Review[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+  const [ratingStats, setRatingStats] = useState<RatingStats>({
+    totalReview: 0,
+    averageRating: 0,
+    stars: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    percentage: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+  });
 
   // Rating form states
   const [isEditMode, setIsEditMode] = useState(false);
@@ -66,7 +77,7 @@ const CourseReviewsSection = ({
     checkPurchase();
   }, [courseId]);
 
-  // Fetch reviews (user and others)
+  // Fetch reviews (user, others, and stats)
   useEffect(() => {
     const fetchReviews = async () => {
       try {
@@ -86,6 +97,11 @@ const CourseReviewsSection = ({
           // Set other reviews
           if (response.data.otherReviews) {
             setOtherReviews(response.data.otherReviews);
+          }
+
+          // Set rating stats
+          if (response.data.stats) {
+            setRatingStats(response.data.stats);
           }
         }
       } catch (error) {
@@ -126,14 +142,12 @@ const CourseReviewsSection = ({
         });
       } else {
         // Create new review
-        const result = await api.post(`/rating/${courseId}`, payload, {
+        await api.post(`/rating/${courseId}`, payload, {
           withCredentials: true
         });
-
-        console.log(result);
       }
 
-      // Refresh the page or update state
+      // Refresh the page
       alert(userReview ? "Review updated successfully!" : "Review submitted successfully!");
       window.location.reload();
     } catch (error: any) {
@@ -206,10 +220,6 @@ const CourseReviewsSection = ({
     if (displayedReviews.length + PAGE_SIZE >= processedReviews.length) {
       setHasMore(false);
     }
-  };
-
-  const getRatingPercentage = (count: number) => {
-    return totalRatings > 0 ? (count / totalRatings) * 100 : 0;
   };
 
   const handleSortChange = (_newSortBy: string, newSortOrder: string) => {
@@ -320,42 +330,51 @@ const CourseReviewsSection = ({
       )}
 
       {/* Rating Overview */}
-      <div className="grid grid-cols-[30%_70%] gap-1 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-[35%_65%] gap-6 mb-8 p-6 bg-gray-50 rounded-lg">
         {/* Left: Average Rating */}
-        <div className="flex flex-col items-center justify-center">
-          <div className="text-5xl font-bold text-gray-900 mb-2">
-            {averageRating.toFixed(1)}
+        <div className="flex flex-col items-center justify-center border-r border-gray-200 pr-6">
+          <div className="text-6xl font-bold text-gray-900 mb-2">
+            {ratingStats.averageRating.toFixed(1)}
           </div>
-          <div className="mb-2">
+          <div className="mb-3">
             <StarRating
-              initialRating={averageRating}
+              initialRating={ratingStats.averageRating}
               readonly={true}
-              size={20}
+              size={24}
             />
           </div>
-          <p className="text-sm text-gray-600">Course Rating</p>
+          <p className="text-sm text-gray-600 font-medium">Course Rating</p>
+          <p className="text-xs text-gray-500 mt-1">
+            Based on {ratingStats.totalReview} {ratingStats.totalReview === 1 ? 'review' : 'reviews'}
+          </p>
         </div>
 
         {/* Right: Rating Distribution */}
-        <div className="space-y-2">
+        <div className="space-y-3 py-2">
           {[5, 4, 3, 2, 1].map((rating) => (
-            <div key={rating} className="flex items-center gap-3">
-              <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-yellow-400 h-full transition-all duration-300"
-                  style={{
-                    width: `${getRatingPercentage(
-                      ratingDistribution[rating as keyof typeof ratingDistribution]
-                    )}%`,
-                  }}
-                />
-              </div>
-              <div className="min-w-[100px]">
+            <div key={rating} className="flex items-center gap-4">
+              <div className="flex items-center gap-2 min-w-[80px]">
                 <StarRating
                   initialRating={rating}
                   readonly={true}
-                  size={14}
+                  size={16}
                 />
+              </div>
+              <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div
+                  className="bg-yellow-400 h-full transition-all duration-500 ease-out"
+                  style={{
+                    width: `${ratingStats.percentage[rating as keyof typeof ratingStats.percentage]}%`,
+                  }}
+                />
+              </div>
+              <div className="min-w-[60px] text-right">
+                <span className="text-sm font-medium text-gray-700">
+                  {ratingStats.percentage[rating as keyof typeof ratingStats.percentage].toFixed(0)}%
+                </span>
+                <span className="text-xs text-gray-500 ml-1">
+                  ({ratingStats.stars[rating as keyof typeof ratingStats.stars]})
+                </span>
               </div>
             </div>
           ))}
@@ -364,14 +383,22 @@ const CourseReviewsSection = ({
 
       {/* Sort Only */}
       <div className="mb-6 flex items-center justify-between">
-        <p className="text-sm font-semibold text-gray-900">Reviews from Other Students</p>
+        <p className="text-sm font-semibold text-gray-900">
+          Reviews from Other Students
+          {otherReviews.length > 0 && (
+            <span className="text-gray-500 font-normal ml-2">
+              ({otherReviews.length})
+            </span>
+          )}
+        </p>
         <SortByReview onSortChange={handleSortChange} />
       </div>
 
       {/* Reviews List - Only Other Reviews */}
       {isLoadingReviews ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">Loading reviews...</p>
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600"></div>
+          <p className="text-gray-500 mt-3">Loading reviews...</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -380,9 +407,12 @@ const CourseReviewsSection = ({
               <ReviewCard key={review.id} {...review} />
             ))
           ) : (
-            <p className="text-center text-gray-500 py-8">
-              No other reviews available yet
-            </p>
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-500">No other reviews available yet</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Be the first to share your experience!
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -392,7 +422,7 @@ const CourseReviewsSection = ({
         <div className="mt-6 text-center">
           <button
             onClick={showMoreReviews}
-            className="inline-flex items-center gap-2 px-6 py-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium rounded-lg transition-colors"
           >
             Show more ratings
             <ChevronDown size={18} />
@@ -402,7 +432,7 @@ const CourseReviewsSection = ({
 
       {/* No more reviews message */}
       {!hasMore && displayedReviews.length > 0 && processedReviews.length > PAGE_SIZE && (
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center text-gray-500 text-sm mt-6 py-4 bg-gray-50 rounded-lg">
           You've reached the end of reviews
         </p>
       )}
