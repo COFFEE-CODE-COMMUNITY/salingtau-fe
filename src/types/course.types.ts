@@ -1,25 +1,38 @@
-// Enums
+// =====================
+// ENUMS
+// =====================
 export enum CourseLevel {
   BEGINNER = "BEGINNER",
   INTERMEDIATE = "INTERMEDIATE",
   ADVANCED = "ADVANCED",
-  ALL_LEVELS = "ALL_LEVELS"
+  ALL_LEVELS = "ALL_LEVELS",
 }
 
 export enum CourseStatus {
   DRAFT = "DRAFT",
   PUBLISHED = "PUBLISHED",
-  ARCHIVED = "ARCHIVED"
+  ARCHIVED = "ARCHIVED",
 }
 
 export enum LectureType {
   VIDEO = "VIDEO",
   ARTICLE = "ARTICLE",
   FILE = "FILE",
-  EXTERNAL = "EXTERNAL"
+  EXTERNAL = "EXTERNAL",
 }
 
-// Base entities
+// =====================
+// USER & MEDIA
+// =====================
+export interface ProfilePicture {
+  id?: string;
+  url: string;
+  width?: number;
+  height?: number;
+  variant?: "original" | "small" | "medium" | "large";
+  filename?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -29,124 +42,137 @@ export interface User {
   bio?: string;
 }
 
-export interface ProfilePicture {
-  id: string;
-  url: string;
-  filename: string;
+// =====================
+// INSTRUCTOR
+// =====================
+export interface Instructor extends User {
+  biography?: string | null;
+  headline?: string | null;
+  websiteUrl?: string | null;
+  linkedinUrl?: string | null;
+  xUrl?: string | null;
+  youtubeUrl?: string | null;
+  facebookUrl?: string | null;
+  instagramUrl?: string | null;
+  tiktokUrl?: string | null;
 }
 
+// =====================
+// CATEGORY
+// =====================
 export interface Category {
   id: string;
   name: string;
   description?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Course related entities
+// =====================
+// VIDEO
+// =====================
+export interface Video {
+  path: string;
+  mimetype?: string | null;
+  size?: number | null;
+  durationMilliseconds?: string;
+  resolutions?: number[];
+  status?: "processing" | "ready" | "failed";
+}
+
+// =====================
+// LECTURE
+// =====================
 export interface Lecture {
   id: string;
   title: string;
+  description?: string;
   type: LectureType;
-  duration: number; // in seconds
-  order: number;
-  content?: string;
+
+  // ordering
+  order?: number;
+  displayOrder?: number;
+
+  // content
+  duration?: number; // seconds
+  video?: Video;
   videoUrl?: string;
   fileUrl?: string;
   externalUrl?: string;
-  createdAt: string;
-  updatedAt: string;
+  content?: string;
+
+  createdAt?: string;
+  updatedAt?: string;
 }
 
+// =====================
+// SECTION
+// =====================
 export interface Section {
   id: string;
   title: string;
   description?: string;
-  order: number;
+
+  order?: number;
+  displayOrder?: number;
+
   lectures: Lecture[];
-  createdAt: string;
-  updatedAt: string;
+
+  createdAt?: string;
+  updatedAt?: string;
 }
 
+// =====================
+// COURSE
+// =====================
 export interface Course {
   id: string;
   title: string;
   description: string;
-  thumbnail?: string;
+  slug?: string;
+
+  thumbnail?: {
+    url: string;
+    width?: number;
+    height?: number;
+  };
+
   price: number;
   discountPrice?: number;
-  level: CourseLevel;
+
+  level?: CourseLevel;
   status: CourseStatus;
   language?: string;
-  totalDuration?: number; // in seconds
+
+  totalDuration?: number; // seconds
   totalStudents?: number;
   averageRating?: number;
   totalRatings?: number;
-  instructor: User;
+
+  instructor: Instructor;
   category: Category;
   sections?: Section[];
+
   createdAt: string;
   updatedAt: string;
 }
 
-// DTOs
-export interface CreateCourseDto {
-  title: string;
-  description: string;
-  thumbnail?: string;
-  price: number;
-  discountPrice?: number;
-  level: CourseLevel;
-  language?: string;
-  categoryId: string;
+// =====================
+// COURSE DETAIL
+// =====================
+export interface CourseDetail extends Course {
+  totalLectures?: number;
+  totalSections?: number;
 }
 
-export interface UpdateCourseDto {
-  title?: string;
-  description?: string;
-  thumbnail?: string;
-  price?: number;
-  discountPrice?: number;
-  level?: CourseLevel;
-  status?: CourseStatus;
-  language?: string;
-  categoryId?: string;
-}
-
-export interface CourseResponseDto {
-  id: string;
-  title: string;
-  description: string;
-  thumbnail?: string;
-  price: number;
-  discountPrice?: number;
-  level: CourseLevel;
-  status: CourseStatus;
-  language?: string;
-  totalDuration?: number;
-  totalStudents?: number;
-  averageRating?: number;
-  totalRatings?: number;
-  instructor: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-    bio?: string;
-  };
-  category: {
-    id: string;
-    name: string;
-  };
-  sections?: Section[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Progress related
+// =====================
+// PROGRESS
+// =====================
 export interface LectureProgress {
   id: string;
   lectureId: string;
   userId: string;
-  watchedDuration: number; // in seconds
+  watchedDuration: number;
   completed: boolean;
   lastWatchedAt: string;
 }
@@ -161,8 +187,19 @@ export interface CourseProgress {
   lastAccessedAt: string;
 }
 
-// Extended types for frontend display
-export interface CourseDetailDisplay extends Course {
-  lectureProgress?: Record<string, LectureProgress>; // lectureId -> progress
+// =====================
+// FRONTEND DISPLAY
+// =====================
+export interface CourseDetailDisplay extends CourseDetail {
+  lectureProgress?: Record<string, LectureProgress>;
   courseProgress?: CourseProgress;
+}
+
+// =====================
+// RESPONSES
+// =====================
+export interface CourseDetailResponse {
+  course: CourseDetail | null;
+  loading: boolean;
+  error: string | null;
 }

@@ -412,7 +412,7 @@ const CourseReviewsSection = ({ courseId }: CourseReviewsSectionProps) => {
                 rating={review.rating}
                 createdAt={review.createdAt}
                 comment={review.comment}
-                baseImageUrl="https://yourdomain.com/uploads/"
+                // baseImageUrl={review.userAvatar}
               />
             ))
           ) : (

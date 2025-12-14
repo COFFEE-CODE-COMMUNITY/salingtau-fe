@@ -17,14 +17,15 @@ export interface CourseLegacy {
 // Helper to convert Course to legacy format
 export const toLegacyCourse = (course: Course): CourseLegacy => ({
   id: course.id,
-  image: course.thumbnail || '',
+  image: course.thumbnail?.url ?? '',
   category: course.category.name,
   title: course.title,
-  rating: course.averageRating || 0,
-  totalRatings: course.totalRatings || 0,
+  rating: course.averageRating ?? 0,
+  totalRatings: course.totalRatings ?? 0,
   creator: `${course.instructor.firstName} ${course.instructor.lastName}`,
-  price: course.price
+  price: course.price,
 });
+
 
 export const coursesData = [
   {

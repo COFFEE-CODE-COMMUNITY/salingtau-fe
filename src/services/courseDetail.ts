@@ -1,33 +1,8 @@
 import { useState, useEffect } from "react"
 import api from "./api"
 import type { Course, Instructor, Category } from "./exploreCourse"
+import type {Lecture, Section} from "@/types/course.types.ts";
 
-// Extended types for course detail
-export interface Section {
-  id: string
-  title: string
-  description?: string
-  order?: number
-  displayOrder?: number
-  createdAt: string
-  updatedAt: string
-  lectures?: Lecture[]
-}
-
-export interface Lecture {
-  id: string
-  title: string
-  description?: string
-  type: "VIDEO" | "ARTICLE" | "FILE"
-  duration: number
-  videoUrl?: string
-  articleContent?: string
-  fileUrl?: string
-  order: number
-  isFree: boolean
-  createdAt: string
-  updatedAt: string
-}
 
 export interface CourseDetail extends Course {
   sections?: Section[]
@@ -42,9 +17,8 @@ export interface CourseDetail extends Course {
 
 // Service function
 export const getCourseDetail = async (courseIdOrSlug: string): Promise<CourseDetail> => {
-  // Fetch basic course data
   const response = await api.get(`/courses/${courseIdOrSlug}`)
-  
+  console.log(response.data)
   if (response.status !== 200) {
     throw new Error(response.data?.message || "Failed to fetch course detail")
   }
@@ -73,14 +47,15 @@ export const getCourseDetail = async (courseIdOrSlug: string): Promise<CourseDet
             // Try nested path first
             try {
               lecturesResponse = await api.get(`/courses/${courseData.id}/sections/${section.id}/lectures`)
+              console.log("Lecture response", lecturesResponse)
             } catch (nestedError) {
               // If nested fails, try direct path
               console.log("⚠️ Nested lectures endpoint failed, creating mock lectures for section:", section.id);
               
               // Since we don't have a working lectures endpoint yet, 
               // we'll create a mock structure with video URL based on course processing
-              const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8081/api/v1"
-              const videoUrl = `${baseUrl}/files/courses/${courseData.id}/master.m3u8`
+              const baseUrl = import.meta.env.VITE_API_URL
+              const videoUrl = `${baseUrl}${courseData.id}/master.m3u8`
               
               const mockLecture = {
                 id: `${section.id}-lecture-1`,
@@ -160,6 +135,7 @@ export const useCourseDetail = (courseIdOrSlug: string | undefined) => {
       setError(null)
 
       const courseData = await getCourseDetail(id)
+      console.log(courseData)
       setCourse(courseData)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch course detail")

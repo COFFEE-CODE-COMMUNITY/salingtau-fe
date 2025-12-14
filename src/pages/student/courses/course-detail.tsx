@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import CourseReviewsSection from "@/components/ui/course-review-section.tsx";
-import { sampleRatingDistribution } from "@/utils/reviewData.ts";
+// import { sampleRatingDistribution } from "@/utils/reviewData.ts";
 import CircularProgressBar from "@/components/ui/circular-progress-bar.tsx";
 import api from "@/services/api.ts";
 import { useUser } from "@/utils/user-context.tsx";
@@ -383,9 +383,9 @@ const CourseDetailPage = () => {
             {/* Student Reviews */}
             <CourseReviewsSection
               courseId={courseData.id}
-              averageRating={courseData.averageRating}
-              totalRatings={courseData.totalReviews}
-              ratingDistribution={sampleRatingDistribution}
+              // averageRating={courseData.averageRating}
+              // totalRatings={courseData.totalReviews}
+              // ratingDistribution={sampleRatingDistribution}
             />
           </div>
 

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import {useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Hls from "hls.js";
-import {Code, FileText, PlayCircle, ExternalLink, Clock, ChevronLeft, Menu} from "lucide-react";
+import { Code, FileText, PlayCircle, ExternalLink, Clock, ChevronLeft, Menu } from "lucide-react";
 import Article from "./article.tsx";
-import {FileDownloadDialog} from "@/components/ui/file-download-dialog.tsx";
-import {ExternalLinkDialog} from "@/components/ui/external-link-dialog.tsx";
+import { FileDownloadDialog } from "@/components/ui/file-download-dialog.tsx";
+import { ExternalLinkDialog } from "@/components/ui/external-link-dialog.tsx";
 import { useCourseDetail } from "@/services/courseDetail.ts";
 import { getProfilePictureUrl } from "@/utils/imageUtils";
 import {
@@ -13,41 +13,47 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion.tsx";
+import type { Section } from "@/types/course.types.ts";
 
 const PlayCourse = () => {
-  const {courseId} = useParams<{ courseId: string }>();
+  const { courseId } = useParams<{ courseId: string }>();
   const { course, loading, error } = useCourseDetail(courseId);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState<{
     type: 'file' | 'external' | null;
     lessonId: string | null;
-  }>({type: null, lessonId: null});
+  }>({ type: null, lessonId: null });
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
 
+  // Get video base URL from environment
+  const VIDEO_BASE_URL = import.meta.env.VITE_VIDEO_BASE_URL || 'http://localhost:8081/api/v1/files/';
+
+  // Helper function to build video URL
+  const buildVideoUrl = (path: string): string => {
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    return `${VIDEO_BASE_URL}${path}`;
+  };
+
   // Set first lesson as active when course is loaded
   useEffect(() => {
-    console.log("📚 Course data:", course);
-    console.log("📚 Sections:", course?.sections);
-    
     if (course?.sections && course.sections.length > 0) {
-      console.log("✅ Course has", course.sections.length, "sections");
-
       const allLessons = course.sections.flatMap((s) => s.lectures || []);
-      console.log("📋 All lessons:", allLessons);
-      console.log("📋 Total lessons:", allLessons.length);
+
+      console.log("📚 Course loaded:", {
+        title: course.title,
+        sections: course.sections.length,
+        totalLessons: allLessons.length,
+        firstLesson: allLessons[0]?.title
+      });
 
       if (allLessons.length > 0) {
-        const firstLesson = allLessons[0];
-        console.log("🎯 Setting first lesson as active:", firstLesson);
-        setActiveLessonId(firstLesson?.id ?? null);
-      } else {
-        console.warn("⚠️ No lessons found in course sections");
+        setActiveLessonId(allLessons[0]?.id ?? null);
       }
-    } else {
-      console.warn("⚠️ Course has no sections or lessons");
     }
   }, [course]);
 
@@ -62,113 +68,89 @@ const PlayCourse = () => {
   }, []);
 
   useEffect(() => {
-    if (!activeLessonId) {
+    if (!activeLessonId || !course) return;
+
+    const allLessons = course.sections?.flatMap((s) => s.lectures || []);
+    const activeLesson = allLessons?.find((l) => l.id === activeLessonId);
+
+    if (!activeLesson || activeLesson.type !== "VIDEO") return;
+
+    // Get video path from the video object
+    const videoPath = activeLesson.video?.path;
+
+    if (!videoPath) {
+      console.error("❌ No video path found for lesson:", activeLesson.id);
       return;
     }
 
-    const allLessons = course?.sections?.flatMap((s) => s.lectures || []) || [];
-    console.log("🔍 Searching for lesson with ID:", activeLessonId);
-    console.log("🔍 Available lessons:", allLessons.map((l: any) => ({ id: l.id, title: l.title })));
-    
-    const activeLesson = allLessons.find((l: { id: string | null; }) => l.id === activeLessonId);
+    // Build full video URL
+    const fullVideoUrl = buildVideoUrl(videoPath);
 
-    console.log("🎬 Active lesson found:", activeLesson);
+    console.log("🎬 Loading lesson:", {
+      id: activeLesson.id,
+      title: activeLesson.title,
+      type: activeLesson.type,
+      videoPath: videoPath,
+      fullUrl: fullVideoUrl,
+      status: activeLesson.video?.status,
+      duration: activeLesson.video?.durationMilliseconds,
+      resolutions: activeLesson.video?.resolutions
+    });
 
-    if (!activeLesson) {
-      console.error("❌ Active lesson not found in course data");
-      return;
-    }
-
-    if (activeLesson.type?.toUpperCase() !== "VIDEO") {
-      console.log("ℹ️ Active lesson is not a video type:", activeLesson.type);
-      return;
-    }
-
-    if (videoRef.current) {
-      const videoUrl = activeLesson.videoUrl;
-      console.log("🔗 Video URL from lesson:", videoUrl);
-
-      if (videoUrl) {
-        loadVideo(videoUrl);
-      } else {
-        console.warn("⚠️ No video URL found for this lesson");
-        console.log("🔴 Cannot load video - no valid URL available");
-      }
-    } else {
-      console.error("❌ Video element not ready");
+    if (videoRef.current && fullVideoUrl) {
+      loadVideo(fullVideoUrl);
     }
   }, [activeLessonId, course]);
 
   const loadVideo = (videoUrl: string) => {
     const video = videoRef.current;
-    if (!video) {
-      console.error("❌ Video element not found");
-      return;
-    }
+    if (!video) return;
+
     // Destroy existing HLS instance
     if (hlsRef.current) {
-      console.log("🧹 Destroying existing HLS instance");
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
 
     // Check if the URL is an m3u8 file
     if (videoUrl.includes('.m3u8')) {
-      console.log("🎬 Detected HLS stream (m3u8)");
-      
       if (Hls.isSupported()) {
-        console.log("✅ HLS.js is supported");
-        
         const hls = new Hls({
           enableWorker: true,
           lowLatencyMode: false,
           backBufferLength: 90,
-          debug: true, // Enable debug logging
+          debug: false,
         });
 
-        console.log("🔗 Loading HLS source:", videoUrl);
         hls.loadSource(videoUrl);
         hls.attachMedia(video);
 
         hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
-          console.log("✅ Manifest parsed successfully");
-          console.log("📊 Available levels:", data.levels);
-          
-          video.play().catch((err) => {
-            console.log("⚠️ Auto-play prevented:", err.message);
-            console.log("👆 Please click play button manually");
+          console.log("✅ Video ready:", {
+            qualities: data.levels.length,
+            duration: data.levels[0]?.details?.totalduration || 'unknown'
+          });
+
+          video.play().catch(() => {
+            console.log("ℹ️ Autoplay prevented - user interaction required");
           });
         });
 
-        hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-          console.log("✅ Media attached to video element");
-        });
-
-        hls.on(Hls.Events.LEVEL_LOADED, (_event, data) => {
-          console.log("✅ Level loaded:", data.level, "- Duration:", data.details.totalduration);
-        });
-
-        hls.on(Hls.Events.FRAG_LOADED, (_event, data) => {
-          console.log("✅ Fragment loaded:", data.frag.sn);
-        });
-
         hls.on(Hls.Events.ERROR, (_event, data) => {
-          console.error("❌ HLS Error:", data);
-          
           if (data.fatal) {
-            console.error("⚠️ Fatal error detected:", data.type, data.details);
-            
+            console.error("❌ HLS Error:", {
+              type: data.type,
+              details: data.details
+            });
+
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
-                console.error("🌐 Network error - trying to recover");
                 hls.startLoad();
                 break;
               case Hls.ErrorTypes.MEDIA_ERROR:
-                console.error("🎥 Media error - trying to recover");
                 hls.recoverMediaError();
                 break;
               default:
-                console.error("❌ Fatal error - cannot recover");
                 hls.destroy();
                 break;
             }
@@ -177,35 +159,34 @@ const PlayCourse = () => {
 
         hlsRef.current = hls;
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        console.log("🍎 Safari native HLS support detected");
+        console.log("🍎 Using Safari native HLS");
         video.src = videoUrl;
         video.addEventListener('loadedmetadata', () => {
-          console.log("✅ Video metadata loaded");
-          video.play().catch((err) => {
-            console.log("⚠️ Auto-play prevented:", err.message);
+          video.play().catch(() => {
+            console.log("ℹ️ Autoplay prevented");
           });
         });
       } else {
-        console.error("❌ HLS is not supported in this browser");
-        alert("Your browser does not support HLS video playback. Please use a modern browser like Chrome, Firefox, or Safari.");
+        console.error("❌ HLS not supported");
+        alert("Your browser does not support HLS video playback. Please use a modern browser.");
       }
     } else {
       video.src = videoUrl;
       video.load();
-      video.play().catch((err) => {
-        console.log("⚠️ Auto-play prevented:", err.message);
+      video.play().catch(() => {
+        console.log("ℹ️ Autoplay prevented");
       });
     }
   };
 
   const handleLessonClick = (lessonId: string, lessonType: string) => {
     if (lessonType === "FILE") {
-      setOpenDialog({type: 'file', lessonId});
+      setOpenDialog({ type: 'file', lessonId });
     } else if (lessonType === "EXTERNAL") {
-      setOpenDialog({type: 'external', lessonId});
+      setOpenDialog({ type: 'external', lessonId });
     } else {
       setActiveLessonId(lessonId);
-      setIsSidebarOpen(false); // Close sidebar on mobile after selecting
+      setIsSidebarOpen(false);
     }
   };
 
@@ -239,34 +220,43 @@ const PlayCourse = () => {
     );
   }
 
-  const allLessons = course.sections?.flatMap((s) => s.lectures || []) || [];
-  const activeLesson = allLessons.find((l: { id: string | null; }) => l.id === activeLessonId);
+  const allLessons = course?.sections?.flatMap((s) => s.lectures || []);
+  const activeLesson = allLessons?.find((l) => l.id === activeLessonId);
 
   const getLessonIcon = (type: string) => {
     switch (type.toUpperCase()) {
       case "VIDEO":
-        return <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5"/>;
+        return <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5" />;
       case "FILE":
-        return <FileText className="w-4 h-4 sm:w-5 sm:h-5"/>;
+        return <FileText className="w-4 h-4 sm:w-5 sm:h-5" />;
       case "ARTICLE":
-        return <Code className="w-4 h-4 sm:w-5 sm:h-5"/>;
+        return <Code className="w-4 h-4 sm:w-5 sm:h-5" />;
       case "EXTERNAL":
-        return <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5"/>;
+        return <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5" />;
       default:
-        return <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5"/>;
+        return <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5" />;
     }
   };
 
-  const getSectionStats = (sectionId: React.Key | null | undefined) => {
-    const section = course.sections?.find((s: { id: string; }) => s.id === sectionId);
-    if (!section || !section.lectures) return {lectureCount: 0, totalDuration: 0};
+  const getSectionStats = (section: Section) => {
+    if (!section.lectures) {
+      return { lectureCount: 0, totalDuration: 0 };
+    }
 
     const lectureCount = section.lectures.length;
-    const totalDuration = section.lectures
-      .filter((l: { type: string; }) => l.type.toUpperCase() === "VIDEO")
-      .reduce((sum: any, l: { duration: any; }) => sum + (l.duration || 0), 0);
 
-    return {lectureCount, totalDuration};
+    const totalDuration = section.lectures
+      .filter((l) => l.type === "VIDEO" && l.video?.durationMilliseconds)
+      .reduce((sum, l) => {
+        const durationMs = l.video?.durationMilliseconds ?? "0";
+        const durationInSeconds = parseInt(durationMs) / 1000;
+        return sum + durationInSeconds;
+      }, 0);
+
+    return {
+      lectureCount,
+      totalDuration, // ← sekarang PASTI number
+    };
   };
 
   const formatDuration = (seconds: number) => {
@@ -279,16 +269,28 @@ const PlayCourse = () => {
     return `${minutes}m`;
   };
 
+  const formatLectureDuration = (durationMs: string | undefined) => {
+    if (!durationMs) return null;
+    const totalSeconds = Math.floor(parseInt(durationMs) / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  };
+
   // Get current lesson data for dialogs
-  const currentFileLesson = activeLessonId ? allLessons.find((l: any) => l.id === openDialog.lessonId) : null;
-  const currentExternalLesson = activeLessonId ? allLessons.find((l: any) => l.id === openDialog.lessonId) : null;
+  const currentFileLesson = openDialog.lessonId
+    ? allLessons?.find((l) => l.id === openDialog.lessonId)
+    : null;
+  const currentExternalLesson = openDialog.lessonId
+    ? allLessons?.find((l) => l.id === openDialog.lessonId)
+    : null;
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
       {/* Main Content */}
       <div className="flex-1 bg-white">
-        {activeLesson?.type.toUpperCase() === "ARTICLE" ? (
-          <Article title={activeLesson.title}/>
+        {activeLesson?.type === "ARTICLE" ? (
+          <Article title={activeLesson.title} />
         ) : (
           <>
             <div className="relative w-full bg-black aspect-video">
@@ -304,7 +306,7 @@ const PlayCourse = () => {
 
             <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-4 sm:py-6 md:py-8">
               <div className="text-blue-600 text-xs sm:text-sm font-semibold uppercase tracking-wide mb-2 sm:mb-3">
-                {course.category?.name || "Course"}
+                {course.category.name}
               </div>
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 leading-tight break-words">
                 {course.title}
@@ -377,12 +379,12 @@ const PlayCourse = () => {
           </button>
         </div>
 
-        <Accordion type="multiple" defaultValue={course.sections?.map((s: { id: any; }) => s.id) || []} className="w-full">
+        <Accordion type="multiple" defaultValue={course.sections?.map((s) => s.id)} className="w-full">
           {course.sections?.map((section) => {
-            const stats = getSectionStats(section.id);
+            const stats = getSectionStats(section);
 
             return (
-              <AccordionItem key={section.id} value={String(section?.id ?? "")} className="border-b">
+              <AccordionItem key={section.id} value={section.id} className="border-b">
                 <AccordionTrigger className="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-100 hover:no-underline transition-colors touch-manipulation">
                   <div className="flex flex-col items-start text-left w-full pr-2">
                     <h3 className="text-xs sm:text-sm font-semibold text-gray-900 break-words">
@@ -402,10 +404,10 @@ const PlayCourse = () => {
                 </AccordionTrigger>
 
                 <AccordionContent className="pb-0">
-                  {section.lectures?.map((lesson: any) => {
-                    const lessonTypeUpper = lesson.type.toUpperCase();
-                    const isActive = activeLessonId === lesson.id && (lessonTypeUpper === "VIDEO" || lessonTypeUpper === "ARTICLE");
-                    
+                  {section.lectures?.map((lesson) => {
+                    const isActive = activeLessonId === lesson.id &&
+                      (lesson.type === "VIDEO" || lesson.type === "ARTICLE");
+
                     return (
                       <div
                         key={lesson.id}
@@ -423,23 +425,15 @@ const PlayCourse = () => {
                           <div className={`text-xs sm:text-sm font-medium break-words ${isActive ? "text-blue-600" : "text-gray-900"}`}>
                             {lesson.title}
                           </div>
-                          {lessonTypeUpper === "VIDEO" && lesson.duration && (
+                          {lesson.type === "VIDEO" && lesson.video?.durationMilliseconds && (
                             <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                               <Clock className="w-3 h-3 flex-shrink-0" />
-                              <span>
-                                {Math.floor(lesson.duration / 60)}:
-                                {String(lesson.duration % 60).padStart(2, '0')}
-                              </span>
+                              <span>{formatLectureDuration(lesson.video.durationMilliseconds)}</span>
                             </div>
                           )}
-                          {lessonTypeUpper === "FILE" && (
+                          {lesson.type === "FILE" && (
                             <div className="text-xs text-gray-500 mt-0.5">
                               Click to download
-                            </div>
-                          )}
-                          {lessonTypeUpper === "EXTERNAL" && (
-                            <div className="text-xs text-gray-500 mt-0.5">
-                              External resource
                             </div>
                           )}
                         </div>
@@ -454,7 +448,7 @@ const PlayCourse = () => {
       </aside>
 
       {/* File Download Dialog */}
-      {openDialog.type === 'file' && openDialog.lessonId && currentFileLesson && (
+      {openDialog.type === 'file' && currentFileLesson && (
         <FileDownloadDialog
           lectureFile={{
             id: currentFileLesson.id,
@@ -463,29 +457,28 @@ const PlayCourse = () => {
             file_name: currentFileLesson.title || "Download",
             file_size: 0,
             mimetype: "application/octet-stream",
-            created_at: currentFileLesson.createdAt,
-            updated_at: currentFileLesson.updatedAt
+            created_at: currentFileLesson.createdAt || "",
+            updated_at: currentFileLesson.updatedAt || ""
           }}
           open={true}
-          onOpenChange={(open: any) => {
+          onOpenChange={(open: boolean) => {
             if (!open) setOpenDialog({ type: null, lessonId: null });
           }}
         />
       )}
 
       {/* External Link Dialog */}
-      {openDialog.type === "external" && openDialog.lessonId && currentExternalLesson && (
+      {openDialog.type === "external" && currentExternalLesson && (
         <ExternalLinkDialog
           open={true}
           onOpenChange={(open: boolean) => {
             if (!open) setOpenDialog({ type: null, lessonId: null });
           }}
-          lectureTitle={currentExternalLesson.title || "External Resource"}
-          lectureDescription={currentExternalLesson.description || ""}
+          lectureTitle={currentExternalLesson.title}
+          lectureDescription={currentExternalLesson.description}
           externalUrl={currentExternalLesson.fileUrl || "#"}
         />
       )}
-
     </div>
   );
 };
