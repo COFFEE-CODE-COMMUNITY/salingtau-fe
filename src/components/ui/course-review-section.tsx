@@ -1,12 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
 import { ChevronDown, Edit2, Trash2 } from "lucide-react";
-import ReviewCard from "./review-card.tsx";
+import ReviewCard, {type User} from "./review-card.tsx";
 import { StarRating } from "@/components/ui/star-rating.tsx";
 import { SortByReview } from "@/components/ui/sort-by-review.tsx";
 import { purchaseStatusRating } from "@/services/purchaseStatusRating.ts";
 import api from "@/services/api.ts";
 
 interface Review {
+  createdAt: Date;
+  user: User;
   id: string;
   userName: string;
   userAvatar: string;
@@ -404,7 +406,14 @@ const CourseReviewsSection = ({ courseId }: CourseReviewsSectionProps) => {
         <div className="space-y-4">
           {displayedReviews.length > 0 ? (
             displayedReviews.map((review) => (
-              <ReviewCard key={review.id} {...review} />
+              <ReviewCard
+                id={review.id}
+                user={review.user}
+                rating={review.rating}
+                createdAt={review.createdAt}
+                comment={review.comment}
+                baseImageUrl="https://yourdomain.com/uploads/"
+              />
             ))
           ) : (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
