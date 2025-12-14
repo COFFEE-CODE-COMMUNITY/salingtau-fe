@@ -6,7 +6,9 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-
+ENV VITE_API_URL=https://api.salingtau.cthree.it.com/api/v1
+ENV VITE_IMAGE_BASE_URL=https://api.salingtau.cthree.it.com/api/v1/files/
+ENV VITE_VIDEO_BASE_URL=https://api.salingtau.cthree.it.com/api/v1/files/
 RUN npm run build
 
 FROM nginx:alpine AS production
