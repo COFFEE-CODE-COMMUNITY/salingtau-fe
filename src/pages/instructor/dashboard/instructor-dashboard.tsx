@@ -1,9 +1,9 @@
 import { useUser } from "@/utils/user-context.tsx"
 import { RevenueChart } from "@/components/ui/charts.tsx"
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import api from '@/services/api'
-import OverviewSection from './overview-section.tsx'
-import RecentActivitySection from './recent-activity-section.tsx'
+import OverviewSection from '../dashboard/overview-section'
+import RecentActivitySection from '../dashboard/recent-activity-section.tsx'
 
 interface Transaction {
   id: string
@@ -87,68 +87,41 @@ export default function InstructorDashboard() {
     totalEnrollments: 0,
   })
   const [revenueData, setRevenueData] = useState<RevenueChartData[]>([])
-  const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [deletingCourseId, setDeletingCourseId] = useState<string | null>(null)
-  const hasLoadedRef = useRef(false)
+
+  // Dummy courses data
+  const [courses, setCourses] = useState<Course[]>([
+
+  ])
 
   useEffect(() => {
-    // Only fetch once on mount
-    if (hasLoadedRef.current) return
-    
-    const fetchDashboardData = async () => {
+    const fetchTransactionHistory = async () => {
       if (!user?.id) return
 
       try {
         setLoading(true)
         setError(null)
 
-        // Fetch transactions
-        try {
-          const transactionsResponse = await api.get(`/transaction/instructor/${user.id}/history`)
-          if (transactionsResponse.status === 200 && transactionsResponse.data) {
-            const transactionsData: Transaction[] = transactionsResponse.data
-            setTransactions(transactionsData)
-            processStatistics(transactionsData)
-            processRevenueChart(transactionsData)
-          }
-        } catch (transErr) {
-          console.error('Error fetching transactions:', transErr)
-        }
+        const response = await api.get(`/transaction/instructor/${user.id}/history`)
 
-        // Fetch courses from backend
-        try {
-          const coursesResponse = await api.get('/courses/instructor')
-          if (coursesResponse.status === 200 && coursesResponse.data) {
-            const coursesData = Array.isArray(coursesResponse.data) 
-              ? coursesResponse.data 
-              : (coursesResponse.data.data || [])
-            setCourses(coursesData)
-          }
-        } catch (courseErr: any) {
-          console.error('Error fetching courses:', courseErr)
-          if (courseErr.response?.status === 401) {
-            setError('Session expired. Please login again.')
-          }
-          setCourses([])
-        }
-
-      } catch (err: any) {
-        console.error('Error fetching dashboard data:', err)
-        if (err.response?.status === 401) {
-          setError('Session expired. Please login again.')
+        if (response.status === 200 && response.data) {
+          const transactionsData: Transaction[] = response.data
+          setTransactions(transactionsData)
+          processStatistics(transactionsData)
+          processRevenueChart(transactionsData)
         } else {
-          setError('Failed to load dashboard data')
+          throw new Error('Failed to fetch transaction history')
         }
-        setCourses([])
+      } catch (err) {
+        console.error('Error fetching transaction history:', err)
+        setError('Failed to load dashboard data')
       } finally {
         setLoading(false)
-        hasLoadedRef.current = true
       }
     }
 
-    fetchDashboardData()
+    fetchTransactionHistory()
   }, [user?.id])
 
   const processStatistics = (transactionsData: Transaction[]) => {
@@ -241,97 +214,19 @@ export default function InstructorDashboard() {
     }).format(amount)
   }
 
-  const handleDeleteCourse = async (courseId: string) => {
-    const course = courses.find(c => c.id === courseId)
-    if (!course) return
-
-    if (window.confirm(`Are you sure you want to delete "${course.title}"? This action cannot be undone.`)) {
-      setDeletingCourseId(courseId)
-      
-      try {
-        console.log('=== DELETE COURSE DEBUG ===')
-        console.log('Course ID:', courseId)
-        console.log('Course title:', course.title)
-        console.log('Sending DELETE request to:', `/courses/${courseId}/instructor`)
-        
-        const response = await api.delete(`/courses/${courseId}/instructor`)
-        
-        console.log('DELETE Response Status:', response.status)
-        console.log('DELETE Response Data:', response.data)
-        
-        if (response.status === 200 || response.status === 204) {
-          console.log('✅ Delete successful')
-          
-          // Update local state immediately
-          setCourses(prevCourses => {
-            const filtered = prevCourses.filter(c => c.id !== courseId)
-            console.log('Courses before delete:', prevCourses.length)
-            console.log('Courses after delete:', filtered.length)
-            return filtered
-          })
-          
-          // Show success message
-          const successDiv = document.createElement('div')
-          successDiv.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in'
-          successDiv.innerHTML = '<span class="flex items-center gap-2"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> Course deleted successfully!</span>'
-          document.body.appendChild(successDiv)
-          setTimeout(() => {
-            successDiv.style.opacity = '0'
-            successDiv.style.transform = 'translateY(-10px)'
-            successDiv.style.transition = 'all 0.3s ease-out'
-            setTimeout(() => successDiv.remove(), 300)
-          }, 2700)
-          
-        } else {
-          throw new Error('Unexpected status code: ' + response.status)
-        }
-      } catch (err: any) {
-        console.error('❌ Error deleting course')
-        console.error('Error object:', err)
-        console.error('Error response status:', err.response?.status)
-        console.error('Error response data:', err.response?.data)
-        
-        let errorMessage = 'Failed to delete course. Please try again.'
-        
-        if (err.response?.status === 500) {
-          errorMessage = err.response?.data?.message || 
-            'Server error: Unable to delete course. The course might have active enrollments or dependencies.'
-        } else if (err.response?.status === 403) {
-          errorMessage = 'You do not have permission to delete this course.'
-        } else if (err.response?.status === 404) {
-          errorMessage = 'Course not found.'
-        } else if (err.response?.data?.message) {
-          errorMessage = err.response.data.message
-        }
-        
-        console.error('Final error message:', errorMessage)
-        
-        // Show error message
-        const errorDiv = document.createElement('div')
-        errorDiv.className = 'fixed top-20 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in max-w-md'
-        errorDiv.innerHTML = `<span class="flex items-center gap-2"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg> ${errorMessage}</span>`
-        document.body.appendChild(errorDiv)
-        setTimeout(() => {
-          errorDiv.style.opacity = '0'
-          errorDiv.style.transform = 'translateY(-10px)'
-          errorDiv.style.transition = 'all 0.3s ease-out'
-          setTimeout(() => errorDiv.remove(), 300)
-        }, 4700)
-      } finally {
-        setDeletingCourseId(null)
-      }
+  const handleDeleteCourse = (courseId: string) => {
+    if (window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+      setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId))
     }
   }
 
   const handleEditCourse = (courseId: string) => {
-    console.log('=== EDIT COURSE ===')
-    console.log('Course ID:', courseId)
-    window.location.href = `/instructor/courses/${courseId}/edit`
+    console.log('Edit course:', courseId)
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600 font-medium">Loading dashboard...</p>
@@ -342,33 +237,15 @@ export default function InstructorDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center max-w-md mx-auto w-full">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-4">
-            <p className="text-red-600 font-semibold mb-2">{error}</p>
-            {error.includes('Session expired') || error.includes('login') ? (
-              <p className="text-sm text-red-500">Your session has expired. Please log in again to continue.</p>
-            ) : (
-              <p className="text-sm text-red-500">Unable to load dashboard data. Please try again.</p>
-            )}
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            {error.includes('Session expired') || error.includes('login') ? (
-              <button
-                onClick={() => window.location.href = '/login'}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm active:scale-95"
-              >
-                Go to Login
-              </button>
-            ) : (
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm active:scale-95"
-              >
-                Retry
-              </button>
-            )}
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 font-semibold mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm"
+          >
+            Retry
+          </button>
         </div>
       </div>
     )
@@ -376,20 +253,20 @@ export default function InstructorDashboard() {
 
   return (
     <>
-      {/* Header - Sticky on mobile */}
-      <header className="sticky top-0 bg-white/95 backdrop-blur-md z-30 border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Dashboard</h2>
+      {/* Header tanpa logo tambahan, sesuai aslinya tapi dengan container agar rapi */}
+      <header className="sticky top-0 bg-white/80 backdrop-blur-sm z-30 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+          <h2 className="text-xl font-semibold text-gray-900">Dashboard</h2>
           <div className="flex items-center space-x-4" />
         </div>
       </header>
 
-      {/* Main Content - Mobile Optimized */}
-      <main className="min-h-screen bg-gray-50 pb-8 sm:pb-12">
-        <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 pt-4 sm:pt-8">
+      {/* Main Content dengan vertical spacing yang konsisten */}
+      <main className="min-h-screen bg-gray-50 pb-12">
+        <div className="max-w-7xl mx-auto space-y-8 pt-8">
           
           {/* SECTION 1: OVERVIEW */}
-          <div className="px-0">
+          <div className="px-0"> {/* Wrapper untuk konsistensi layout */}
             <OverviewSection
               name={name}
               stats={stats}
@@ -399,13 +276,13 @@ export default function InstructorDashboard() {
 
           {/* SECTION 2: ANALYTICS CHARTS */}
           <section className="px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-              <div className="mb-4 sm:mb-6">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Analytics Overview</h2>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">Track your performance and growth metrics</p>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Analytics Overview</h2>
+                <p className="text-sm text-gray-500 mt-1">Track your performance and growth metrics</p>
               </div>
 
-              <div className="w-full h-[300px] sm:h-[400px]">
+              <div className="w-full h-[400px]">
                 <RevenueChart data={revenueData} />
               </div>
             </div>
@@ -419,22 +296,11 @@ export default function InstructorDashboard() {
                 formatCurrency={formatCurrency}
                 onDeleteCourse={handleDeleteCourse}
                 onEditCourse={handleEditCourse}
-                deletingCourseId={deletingCourseId}
               />
           </div>
 
         </div>
       </main>
-
-      <style>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-      `}</style>
     </>
   )
 }

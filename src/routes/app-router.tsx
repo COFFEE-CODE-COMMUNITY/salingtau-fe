@@ -16,7 +16,6 @@ import Profile from "@/pages/student/users/profile.tsx";
 import CourseDetail from "@/pages/student/courses/course-detail.tsx";
 import PlayCourse from "@/pages/student/courses/play-course.tsx";
 import TransactionHistory from "@/pages/student/transactions/transaction-history.tsx";
-import BuyCourse from "@/pages/student/courses/buy-course.tsx";
 
 // Instructor pages
 import InstructorDashboard from "@/pages/instructor/dashboard/instructor-dashboard.tsx";
@@ -46,7 +45,6 @@ export function AppRouter() {
             <Route path="course/:courseId" element={<CourseDetail />} />
             <Route path="course/play/:courseId" element={<PlayCourse />} />
             <Route path="history" element={<TransactionHistory />} />
-            <Route path="buy/:id" element={<BuyCourse />} />
           </Route>
         </Route>
 

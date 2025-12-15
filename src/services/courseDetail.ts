@@ -18,7 +18,6 @@ export interface CourseDetail extends Course {
 // Service function
 export const getCourseDetail = async (courseIdOrSlug: string): Promise<CourseDetail> => {
   const response = await api.get(`/courses/${courseIdOrSlug}`)
-  console.log(response.data)
   if (response.status !== 200) {
     throw new Error(response.data?.message || "Failed to fetch course detail")
   }
@@ -30,30 +29,20 @@ export const getCourseDetail = async (courseIdOrSlug: string): Promise<CourseDet
   
   try {
     if (courseData.id) {
-      console.log("🔍 Fetching sections for course:", courseData.id)
-      
       const sectionsResponse = await api.get(`/courses/${courseData.id}/sections`)
       
       if (sectionsResponse.status === 200 && sectionsResponse.data?.data) {
         const sections = sectionsResponse.data.data
-        console.log("📋 Found sections:", sections)
         
         // For each section, try to fetch lectures
         for (const section of sections) {
           try {
             // Try different possible endpoints for lectures
             let lecturesResponse
-            
-            // Try nested path first
+
             try {
               lecturesResponse = await api.get(`/courses/${courseData.id}/sections/${section.id}/lectures`)
-              console.log("Lecture response", lecturesResponse)
             } catch (nestedError) {
-              // If nested fails, try direct path
-              console.log("⚠️ Nested lectures endpoint failed, creating mock lectures for section:", section.id);
-              
-              // Since we don't have a working lectures endpoint yet, 
-              // we'll create a mock structure with video URL based on course processing
               const baseUrl = import.meta.env.VITE_API_URL
               const videoUrl = `${baseUrl}${courseData.id}/master.m3u8`
               
@@ -71,35 +60,24 @@ export const getCourseDetail = async (courseIdOrSlug: string): Promise<CourseDet
               }
               
               section.lectures = [mockLecture]
-              
-              console.log("🎥 Created mock lecture:", mockLecture);
-              console.log("🔗 Video URL:", videoUrl);
+
               continue
             }
             
             if (lecturesResponse?.status === 200 && lecturesResponse.data?.data) {
               section.lectures = lecturesResponse.data.data
-              console.log(`📚 Lectures for section ${section.id}:`, section.lectures)
             } else {
               section.lectures = []
             }
           } catch (lectureError) {
-            console.warn(`⚠️ Failed to fetch lectures for section ${section.id}:`, lectureError)
             section.lectures = []
           }
         }
         
         sectionsWithLectures = sections
-        console.log("📎 Final sections with lectures:", sectionsWithLectures.map(s => ({
-          id: s.id,
-          title: s.title,
-          lecturesCount: s.lectures?.length || 0,
-          lectures: s.lectures?.map(l => ({ id: l.id, title: l.title, videoUrl: l.videoUrl }))
-        })))
       }
     }
   } catch (sectionsError) {
-    console.warn("⚠️ Failed to fetch sections:", sectionsError)
     sectionsWithLectures = []
   }
   
@@ -117,9 +95,7 @@ export const getCourseDetail = async (courseIdOrSlug: string): Promise<CourseDet
       ) || 0), 0
     )
   }
-  
-  console.log("📦 Final enriched course data:", enrichedCourse)
-  
+
   return enrichedCourse
 }
 
@@ -135,11 +111,9 @@ export const useCourseDetail = (courseIdOrSlug: string | undefined) => {
       setError(null)
 
       const courseData = await getCourseDetail(id)
-      console.log(courseData)
       setCourse(courseData)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch course detail")
-      console.error("Error fetching course detail:", err)
     } finally {
       setLoading(false)
     }

@@ -25,7 +25,6 @@ export function useLogout() {
 
       navigate("/login", {replace: true})
     } catch (error) {
-      console.error("Logout failed:", error)
       clearUser()
       clearSession()
       navigate("/login", {replace: true})

@@ -2,6 +2,15 @@ import React, { useState } from "react"
 import { UploadCloud, Plus, Trash2, FileVideo } from "lucide-react"
 import { useUploadCourse } from "@/services/uploadCourse.ts";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 // Data Categories & Languages
 const categoriesData = [
@@ -73,10 +82,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, onFileChange, currentFil
       {label && <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>}
       <div
         className={`group relative mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-xl transition-all duration-200 ease-in-out cursor-pointer
-          ${isDragOver 
-            ? "border-blue-500 bg-blue-50 ring-4 ring-blue-100" 
-            : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
-          }`}
+          ${isDragOver
+          ? "border-blue-500 bg-blue-50 ring-4 ring-blue-100"
+          : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
+        }`}
         onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
         onDragLeave={() => setIsDragOver(false)}
         onDrop={handleDrop}
@@ -106,20 +115,20 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, onFileChange, currentFil
         {/* Tampilan File Terpilih */}
         {currentFile && (
           <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-xl border-2 border-green-500 transition-all">
-             <div className="flex items-center gap-2 text-green-600 mb-2">
-                <UploadCloud className="w-6 h-6" />
-                <span className="font-semibold text-sm">File Selected</span>
-             </div>
-             <p className="text-sm font-medium text-gray-900 truncate max-w-[80%] px-2">
-                {currentFile.name}
-             </p>
-             <button
-               type="button"
-               onClick={(e) => { e.preventDefault(); onFileChange(null); }}
-               className="mt-3 px-3 py-1 bg-red-50 text-red-600 text-xs font-medium rounded-full hover:bg-red-100 transition border border-red-200 pointer-events-auto"
-             >
-               Remove File
-             </button>
+            <div className="flex items-center gap-2 text-green-600 mb-2">
+              <UploadCloud className="w-6 h-6" />
+              <span className="font-semibold text-sm">File Selected</span>
+            </div>
+            <p className="text-sm font-medium text-gray-900 truncate max-w-[80%] px-2">
+              {currentFile.name}
+            </p>
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); onFileChange(null); }}
+              className="mt-3 px-3 py-1 bg-red-50 text-red-600 text-xs font-medium rounded-full hover:bg-red-100 transition border border-red-200 pointer-events-auto"
+            >
+              Remove File
+            </button>
           </div>
         )}
       </div>
@@ -130,6 +139,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, onFileChange, currentFil
 export default function CreateCourse() {
   const navigate = useNavigate();
   const { uploadCourse } = useUploadCourse();
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertTitle, setAlertTitle] = useState("Warning")
+  const [alertMessage, setAlertMessage] = useState("")
   const [metadata, setMetadata] = useState<CourseMetadata>({
     title: "",
     description: "",
@@ -158,6 +170,39 @@ export default function CreateCourse() {
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
+
+  const showAlert = (message: string, title = "Warning") => {
+    setAlertTitle(title)
+    setAlertMessage(message)
+    setAlertOpen(true)
+  }
+
+  // Function to check if form is complete
+  const isFormComplete = () => {
+    // Check metadata
+    if (!metadata.title || !metadata.category.name || !metadata.description) {
+      return false;
+    }
+
+    // Check thumbnail
+    if (!thumbnail) {
+      return false;
+    }
+
+    // Check all sections and videos
+    for (const section of sections) {
+      if (!section.name.trim()) {
+        return false;
+      }
+      for (const video of section.videos) {
+        if (!video.title.trim() || !video.file) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
 
   const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -245,46 +290,46 @@ export default function CreateCourse() {
   };
 
   const handleSubmit = async () => {
-    // Validation
-    if (!metadata.title || !metadata.category.name) { 
-      alert("Please fill in all required fields (Title and Category)."); 
-      return; 
+    // Validation (keep for extra safety)
+    if (!metadata.title || !metadata.category.name) {
+      showAlert("Please fill in all required fields (Title and Category).");
+      return;
     }
-    if (!metadata.description) { 
-      alert("Please provide a course description."); 
-      return; 
+    if (!metadata.description) {
+      showAlert("Please provide a course description.");
+      return;
     }
-    if (!thumbnail) { 
-      alert("Please upload a course thumbnail."); 
-      return; 
+    if (!thumbnail) {
+      showAlert("Please upload a course thumbnail.");
+      return;
     }
-    
+
     // Validate sections and videos
     for (const section of sections) {
-      if (!section.name.trim()) { 
-        alert(`Section name cannot be empty`); 
-        return; 
+      if (!section.name.trim()) {
+        showAlert(`Section name cannot be empty`);
+        return;
       }
       for (const video of section.videos) {
-        if (!video.title.trim()) { 
-          alert(`Please fill in all video titles in ${section.name}`); 
-          return; 
+        if (!video.title.trim()) {
+          showAlert(`Please fill in all video titles in ${section.name}`);
+          return;
         }
-        if (!video.file) { 
-          alert(`Please upload all videos in ${section.name}`); 
-          return; 
+        if (!video.file) {
+          showAlert(`Please upload all videos in ${section.name}`);
+          return;
         }
       }
     }
-    
+
     setIsUploading(true);
     setUploadProgress("Preparing course data...");
-    
+
     try {
       setUploadProgress("Creating course...");
-      
+
       // Upload course with all sections and videos
-      const course = await uploadCourse({
+      await uploadCourse({
         title: metadata.title,
         description: metadata.description,
         price: metadata.price,
@@ -293,24 +338,22 @@ export default function CreateCourse() {
         thumbnail: thumbnail,
         sections: sections
       }, setUploadProgress);
-      
+
       setUploadProgress("Course published successfully!");
-      console.log("✅ Course created successfully:", course);
-      
+
       // Show success message for a moment before navigating
       setTimeout(() => {
         setIsUploading(false);
         setUploadProgress("");
         navigate("/dashboard/instructor");
       }, 1500);
-      
+
     } catch (error: any) {
-      console.error("❌ Failed to create course:", error);
       setUploadProgress("");
-      
+
       const errorMessage = error?.response?.data?.message || error?.message || "Unknown error occurred";
-      alert(`Failed to create course: ${errorMessage}`);
-      
+      showAlert(`Failed to create course: ${errorMessage}`);
+
     } finally {
       // Don't reset uploading state immediately if successful, let the timeout handle navigation
       if (uploadProgress !== "Course published successfully!") {
@@ -379,21 +422,21 @@ export default function CreateCourse() {
                   Category <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                    <select
+                  <select
                     name="category"
                     id="category"
                     value={metadata.category.name}
                     onChange={handleMetadataChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none bg-white"
-                    >
+                  >
                     <option value="">Select a category</option>
                     {categoriesData.map((cat) => (
-                        <option key={cat.name} value={cat.name}>{cat.name}</option>
+                      <option key={cat.name} value={cat.name}>{cat.name}</option>
                     ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
                 </div>
               </div>
 
@@ -401,21 +444,21 @@ export default function CreateCourse() {
                 <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-2">
                   Language <span className="text-red-500">*</span>
                 </label>
-                 <div className="relative">
-                    <select
+                <div className="relative">
+                  <select
                     name="language"
                     id="language"
                     value={metadata.language}
                     onChange={handleMetadataChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none bg-white"
-                    >
+                  >
                     {languagesData.map((lang) => (
-                        <option key={lang.code} value={lang.code}>{lang.name}</option>
+                      <option key={lang.code} value={lang.code}>{lang.name}</option>
                     ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
                 </div>
               </div>
 
@@ -443,7 +486,7 @@ export default function CreateCourse() {
 
           {/* Course Thumbnail */}
           <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200">
-             <h2 className="text-xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-100 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-100 flex items-center gap-2">
               <span className="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
               Course Thumbnail
             </h2>
@@ -461,8 +504,8 @@ export default function CreateCourse() {
             <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
               <div>
                 <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <span className="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
-                    Course Content
+                  <span className="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
+                  Course Content
                 </h2>
                 <p className="text-sm text-gray-500 mt-1 ml-10">Organize your course into sections and lectures.</p>
               </div>
@@ -477,16 +520,15 @@ export default function CreateCourse() {
             </div>
 
             <div className="space-y-8">
-              {/* PERBAIKAN DISINI: Menghapus vIndex yang tidak terpakai */}
               {sections.map((section, index) => (
                 <div key={section.id} className="border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden">
                   {/* Section Header */}
                   <div className="p-4 bg-gray-100/80 border-b border-gray-200 flex items-start sm:items-center gap-4">
-                     <div className="flex-none pt-2 sm:pt-0">
-                        <div className="w-6 h-6 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-xs font-bold">
-                            {index + 1}
-                        </div>
-                     </div>
+                    <div className="flex-none pt-2 sm:pt-0">
+                      <div className="w-6 h-6 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-xs font-bold">
+                        {index + 1}
+                      </div>
+                    </div>
                     <div className="flex-1">
                       <input
                         type="text"
@@ -516,77 +558,77 @@ export default function CreateCourse() {
                           {/* Video Info (Left) */}
                           <div className="flex-1 w-full space-y-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                    <FileVideo className="w-5 h-5"/>
-                                </div>
-                                <div className="flex-1">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-                                        Video Title
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={video.title}
-                                        onChange={(e) => updateVideoTitle(section.id, video.id, e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium"
-                                        placeholder="e.g., Introduction to HTML"
-                                    />
-                                </div>
+                              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                <FileVideo className="w-5 h-5"/>
+                              </div>
+                              <div className="flex-1">
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                                  Video Title
+                                </label>
+                                <input
+                                  type="text"
+                                  value={video.title}
+                                  onChange={(e) => updateVideoTitle(section.id, video.id, e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium"
+                                  placeholder="e.g., Introduction to HTML"
+                                />
+                              </div>
                             </div>
 
                             {/* Custom Mini File Upload */}
                             <div className="w-full">
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-                                    Source File
-                                </label>
-                                <div className="relative flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50 hover:border-blue-400 transition-colors group cursor-pointer">
-                                    <input
-                                        type="file"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        onChange={(e) => {
-                                            if (e.target.files && e.target.files[0]) {
-                                                updateVideoFile(section.id, video.id, e.target.files[0]);
-                                            }
-                                        }}
-                                        accept="video/*"
-                                    />
-                                    <div className="text-center">
-                                        {video.file ? (
-                                             <div className="flex items-center gap-2 text-green-600">
-                                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                                <span className="text-sm font-medium truncate max-w-[200px]">{video.file.name}</span>
-                                                <span className="text-xs text-gray-400 ml-1">(Click to change)</span>
-                                             </div>
-                                        ) : (
-                                            <div className="flex items-center gap-2 text-gray-500">
-                                                <UploadCloud className="w-4 h-4 text-gray-400 group-hover:text-blue-500" />
-                                                <span className="text-sm group-hover:text-blue-600 font-medium">Click to upload video</span>
-                                            </div>
-                                        )}
+                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                                Source File
+                              </label>
+                              <div className="relative flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50 hover:border-blue-400 transition-colors group cursor-pointer">
+                                <input
+                                  type="file"
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  onChange={(e) => {
+                                    if (e.target.files && e.target.files[0]) {
+                                      updateVideoFile(section.id, video.id, e.target.files[0]);
+                                    }
+                                  }}
+                                  accept="video/*"
+                                />
+                                <div className="text-center">
+                                  {video.file ? (
+                                    <div className="flex items-center gap-2 text-green-600">
+                                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                      <span className="text-sm font-medium truncate max-w-[200px]">{video.file.name}</span>
+                                      <span className="text-xs text-gray-400 ml-1">(Click to change)</span>
                                     </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2 text-gray-500">
+                                      <UploadCloud className="w-4 h-4 text-gray-400 group-hover:text-blue-500" />
+                                      <span className="text-sm group-hover:text-blue-600 font-medium">Click to upload video</span>
+                                    </div>
+                                  )}
                                 </div>
-                                {video.file && (
-                                    <button
-                                        type="button"
-                                        onClick={() => updateVideoFile(section.id, video.id, null)}
-                                        className="text-xs text-red-500 hover:text-red-700 mt-1 ml-1 font-medium"
-                                    >
-                                        Remove video file
-                                    </button>
-                                )}
+                              </div>
+                              {video.file && (
+                                <button
+                                  type="button"
+                                  onClick={() => updateVideoFile(section.id, video.id, null)}
+                                  className="text-xs text-red-500 hover:text-red-700 mt-1 ml-1 font-medium"
+                                >
+                                  Remove video file
+                                </button>
+                              )}
                             </div>
                           </div>
 
                           {/* Action (Right) */}
                           {section.videos.length > 1 && (
                             <div className="pt-2">
-                                <button
+                              <button
                                 type="button"
                                 onClick={() => removeVideoFromSection(section.id, video.id)}
                                 className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Delete Video"
-                                >
+                              >
                                 <Trash2 className="w-5 h-5" />
-                                </button>
+                              </button>
                             </div>
                           )}
                         </div>
@@ -620,27 +662,40 @@ export default function CreateCourse() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isUploading}
-              className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              disabled={isUploading || !isFormComplete()}
+              className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:shadow-none disabled:hover:bg-gray-400 flex items-center justify-center gap-2"
             >
               {isUploading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    {uploadProgress || "Publishing..."}
-                  </>
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {uploadProgress || "Publishing..."}
+                </>
               ) : (
-                  <>
-                   <UploadCloud className="w-5 h-5" />
-                   Publish Course
-                  </>
+                <>
+                  <UploadCloud className="w-5 h-5" />
+                  Publish Course
+                </>
               )}
             </button>
           </div>
         </div>
       </main>
+      <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

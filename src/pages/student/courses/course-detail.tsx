@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import CourseReviewsSection from "@/components/ui/course-review-section.tsx";
-// import { sampleRatingDistribution } from "@/utils/reviewData.ts";
 import CircularProgressBar from "@/components/ui/circular-progress-bar.tsx";
 import api from "@/services/api.ts";
 import { useUser } from "@/utils/user-context.tsx";
@@ -22,12 +21,6 @@ import { validateTransactionData } from "@/utils/validation";
 import { useCourseDetail } from "@/services/courseDetail.ts";
 import { getCourseThumbnailUrl, getProfilePictureUrl } from "@/utils/imageUtils";
 import { purchaseStatusRating } from "@/services/purchaseStatusRating.ts";
-
-const formatDuration = (seconds: number): string => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-};
 
 // Helper function untuk menghitung progress percentage
 const calculateProgress = (watchedDuration: number, totalDuration: number): number => {
@@ -68,7 +61,6 @@ const CourseDetailPage = () => {
     }
   }, []);
 
-  // Check purchase status
   useEffect(() => {
     const checkPurchaseStatus = async () => {
       if (!courseId || !user?.id) {
@@ -79,10 +71,8 @@ const CourseDetailPage = () => {
       try {
         setIsPurchaseLoading(true);
         const status = await purchaseStatusRating(courseId);
-        console.log(status);
         setIsPurchased(status === true || status?.isPurchased === true);
       } catch (error) {
-        console.error("Error checking purchase status:", error);
         setIsPurchased(false);
       } finally {
         setIsPurchaseLoading(false);
@@ -108,7 +98,6 @@ const CourseDetailPage = () => {
 
   const checkout = async () => {
     if (!user?.id || !courseId || !courseData) {
-      console.error("Missing required data for checkout");
       alert("Unable to proceed with checkout. Please try again.");
       return;
     }
@@ -116,7 +105,6 @@ const CourseDetailPage = () => {
     setIsCheckingOut(true);
 
     try {
-      // Prepare data sesuai CreateTransactionDto
       const requestData: CreateTransactionDto = {
         userId: user.id,
         courseId: courseId,
@@ -124,10 +112,8 @@ const CourseDetailPage = () => {
         currency: "IDR"
       };
 
-      // Validate data sesuai dengan backend DTO validation
       const validation = validateTransactionData(requestData);
       if (!validation.isValid) {
-        console.error("Validation failed:", validation.error);
         alert(validation.error || "Invalid transaction data");
         setIsCheckingOut(false);
         return;
@@ -159,16 +145,13 @@ const CourseDetailPage = () => {
             alert("Payment failed. Please try again.");
           },
           onClose: function() {
-            console.log("Payment popup closed");
             setIsCheckingOut(false);
           }
         });
       } else {
-        // Fallback: redirect to Midtrans payment page
         window.location.href = redirectUrl;
       }
     } catch (error: any) {
-      console.error("Checkout error:", error);
       alert(error.response?.data?.message || "Failed to process checkout. Please try again.");
       setIsCheckingOut(false);
     }
@@ -242,8 +225,6 @@ const CourseDetailPage = () => {
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">
                 <div className="flex items-center gap-1">
                   <Star className="text-yellow-400 fill-yellow-400" size={16} />
-                  <span className="font-semibold">{courseData.averageRating}</span>
-                  <span className="text-gray-500">({courseData.totalReviews} ratings)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <img
@@ -351,23 +332,29 @@ const CourseDetailPage = () => {
                               key={lecture.id}
                               className="flex items-center justify-between p-3 sm:p-4 border-t border-gray-100 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                             >
-                              <Link
-                                to={`/dashboard/student/course/play/${courseId}`}
-                                className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 touch-manipulation"
-                              >
-                                {getLectureIcon(lecture.type)}
-                                <span className="text-xs sm:text-sm text-gray-700 truncate">{lecture.title}</span>
-                              </Link>
+                              {isPurchased ? (
+                                <Link
+                                  to={`/dashboard/student/course/play/${courseId}`}
+                                  className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 touch-manipulation"
+                                >
+                                  {getLectureIcon(lecture.type)}
+                                  <span className="text-xs sm:text-sm text-gray-700 truncate">{lecture.title}</span>
+                                </Link>
+                              ) : (
+                                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 cursor-not-allowed opacity-60">
+                                  {getLectureIcon(lecture.type)}
+                                  <span className="text-xs sm:text-sm text-gray-700 truncate">{lecture.title}</span>
+                                </div>
+                              )}
                               <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-2">
-                                {lecture.duration !== 0 && (
-                                  <span className="text-xs sm:text-sm text-gray-500">
-                                    {formatDuration(lecture.duration)}
-                                  </span>
-                                )}
-                                {lecture.completed ? (
-                                  <CheckCircle size={16} className="text-green-600 sm:w-4 sm:h-4" />
+                                {isPurchased ? (
+                                  lecture.completed ? (
+                                    <CheckCircle size={16} className="text-green-600 sm:w-4 sm:h-4" />
+                                  ) : (
+                                    <CircularProgressBar value={progress} size={16} strokeWidth={2} />
+                                  )
                                 ) : (
-                                  <CircularProgressBar value={progress} size={16} strokeWidth={2} />
+                                  <Clock size={16} className="text-gray-400 sm:w-4 sm:h-4" />
                                 )}
                               </div>
                             </div>
@@ -383,9 +370,6 @@ const CourseDetailPage = () => {
             {/* Student Reviews */}
             <CourseReviewsSection
               courseId={courseData.id}
-              // averageRating={courseData.averageRating}
-              // totalRatings={courseData.totalReviews}
-              // ratingDistribution={sampleRatingDistribution}
             />
           </div>
 

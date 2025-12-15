@@ -35,8 +35,6 @@ export const ProtectedRoute = ({
       return <Navigate to="/" replace />
     }
   }
-
-  console.log("✅ Access granted to protected route")
   return <Outlet />
 }
 

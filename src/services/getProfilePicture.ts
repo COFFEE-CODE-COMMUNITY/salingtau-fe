@@ -30,7 +30,6 @@ export function useProfilePicture(userId?: string) {
 
         setUrl(res.data)
       } catch (err) {
-        console.error("❌ Failed to load profile picture:", err)
         setError("Gagal memuat foto profil")
       } finally {
         setLoading(false)

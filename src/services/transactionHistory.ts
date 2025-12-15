@@ -28,10 +28,10 @@ export interface Transaction {
   updatedAt: string
 }
 
+
 // Service function
 export const getTransactionHistory = async (userId: string): Promise<Transaction[]> => {
   const response = await api.get(`/transaction/student/${userId}/history`)
-  
   if (response.status !== 200) {
     throw new Error(response.data?.message || "Failed to fetch transaction history")
   }
@@ -55,7 +55,6 @@ export const useTransactionHistory = (userId: string | undefined) => {
       setTransactions(response)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch transaction history")
-      console.error("Error fetching transaction history:", err)
     } finally {
       setLoading(false)
     }

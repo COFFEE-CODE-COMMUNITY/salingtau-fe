@@ -20,12 +20,10 @@ export const checkAuth = async () => {
           return retry.status === 200
         }
       } catch (refreshError) {
-        console.warn("Refresh token invalid atau expired")
         return false
       }
     }
 
-    console.error("Auth check gagal:", error)
     return false
   }
 }

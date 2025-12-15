@@ -332,10 +332,6 @@ const PlayCourse = () => {
                   <div className="text-xs sm:text-sm text-gray-500">Instructor</div>
                 </div>
               </div>
-              <button
-                className="w-full sm:w-auto px-5 sm:px-6 md:px-7 py-2.5 sm:py-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.98] touch-manipulation">
-                Done & Continue
-              </button>
             </div>
           </>
         )}

@@ -23,7 +23,6 @@ let refreshSubscribers: Array<(token: string) => void> = []
 
 export const setAccessToken = (token: string) => {
   accessToken = token
-  console.log("✅ Access token set")
 }
 
 export const getAccessToken = (): string | null => accessToken
@@ -32,7 +31,6 @@ export const clearSession = () => {
   accessToken = null
   refreshSubscribers = []
   isRefreshing = false
-  console.log("🧹 Session cleared")
 }
 
 const onTokenRefreshed = (token: string) => {
@@ -67,7 +65,6 @@ api.interceptors.request.use(
     return config
   },
   (error) => {
-    console.error("❌ Request interceptor error:", error)
     return Promise.reject(error)
   }
 )
@@ -89,7 +86,6 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // ✅ Cek apakah ada refresh token cookie sebelum coba refresh
       if (!hasRefreshTokenCookie()) {
-        console.warn("🚫 No refresh token cookie found")
         clearSession()
 
         // ✅ HANYA redirect jika bukan di halaman login
@@ -101,7 +97,6 @@ api.interceptors.response.use(
 
       // ✅ Queue management untuk concurrent requests
       if (isRefreshing) {
-        console.log("⏳ Queueing request while refreshing...")
         return new Promise((resolve) => {
           addRefreshSubscriber((newToken: string) => {
             originalRequest.headers.Authorization = `Bearer ${newToken}`
@@ -114,8 +109,6 @@ api.interceptors.response.use(
       isRefreshing = true
 
       try {
-        console.log("🔄 Refreshing access token...")
-
         const refreshResponse = await api.get("/auth/refresh-token", {
           withCredentials: true,
           skipAuth: true,
@@ -132,12 +125,9 @@ api.interceptors.response.use(
 
         originalRequest.headers.Authorization = `Bearer ${newToken}`
 
-        console.log("✅ Token refreshed, retrying original request")
         return api(originalRequest)
 
       } catch (refreshError) {
-        console.error("❌ Token refresh failed:", refreshError)
-
         // ✅ Clear session dan redirect
         clearSession()
 

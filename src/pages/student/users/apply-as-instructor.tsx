@@ -1,12 +1,37 @@
-import { Users, Clock, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Users, Clock, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react';
 import { useState } from "react";
 import Veriff from "@/pages/student/users/veriff.tsx";
 import api from "@/services/api.ts";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function ApplyAsInstructor() {
-  const [sessionUrl, setSessionUrl] = useState<string | null>(null)
+  const [sessionUrl, setSessionUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Alert Dialog states
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertDetails, setAlertDetails] = useState<string | null>(null);
+
+  const showAlert = (type: 'success' | 'error', message: string, details?: string) => {
+    setAlertType(type);
+    setAlertMessage(message);
+    setAlertDetails(details || null);
+    setAlertOpen(true);
+  };
 
   const handleClickApply = async () => {
+    setIsLoading(true)
+
     try {
       const res = await api.post(
         "/users/me/apply-as-instructor",
@@ -14,15 +39,130 @@ export default function ApplyAsInstructor() {
         { withCredentials: true }
       )
 
-      setSessionUrl(res.data.url)
+      if (res.status === 400) {
+        const data = res.data
+
+        let message = "Bad Request"
+        let details: string | undefined
+
+        if (data?.message) {
+          message = data.message
+        }
+
+        if (data?.errors) {
+          details = Array.isArray(data.errors)
+            ? data.errors.join(", ")
+            : JSON.stringify(data.errors)
+        } else if (typeof data === "string") {
+          details = data
+        }
+
+        showAlert("error", message, details)
+        return
+      }
+
+      if (res.status === 401) {
+        showAlert(
+          "error",
+          "You must be logged in to apply as an instructor.",
+          "Unauthorized (401)"
+        )
+        return
+      }
+
+      if (res.status === 403) {
+        showAlert(
+          "error",
+          "You do not have permission to perform this action.",
+          "Forbidden (403)"
+        )
+        return
+      }
+
+      if (res.status === 409) {
+        showAlert(
+          "error",
+          "You have already applied as an instructor.",
+          "Conflict (409)"
+        )
+        return
+      }
+
+      if (res.status >= 500) {
+        showAlert(
+          "error",
+          "Server error. Please try again later.",
+          `Server Error (${res.status})`
+        )
+        return
+      }
+
+      if (res.status >= 200 && res.status < 300) {
+        setSessionUrl(res.data.url)
+        showAlert(
+          "success",
+          "Application submitted successfully!",
+          "Please complete the identity verification process."
+        )
+        return
+      }
+
+      showAlert(
+        "error",
+        "Unexpected response from server",
+        `HTTP ${res.status}`
+      )
+
     } catch (err) {
-      console.error("Error apply-as-instructor:", err)
+      showAlert(
+        "error",
+        "Unable to connect to the server.",
+        "Network error or timeout"
+      )
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-white/80 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
+        {/* Alert Dialog */}
+        <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                {alertType === 'success' ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <span>Success</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    <span>Error</span>
+                  </>
+                )}
+              </AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-2">
+                  <div className="text-base text-gray-700">{alertMessage}</div>
+                  {alertDetails && (
+                    <div className="text-sm text-gray-600 font-mono bg-gray-50 p-3 rounded border border-gray-200 whitespace-pre-wrap break-words">
+                      {alertDetails}
+                    </div>
+                  )}
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setAlertOpen(false)}>
+                OK
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {/* Header Section */}
         <div className="text-center mb-8 sm:mb-12">
           <div className="inline-block bg-black text-white px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4">
@@ -116,12 +256,22 @@ export default function ApplyAsInstructor() {
         </div>
 
         {/* CTA Button */}
-        <button 
-          onClick={handleClickApply} 
-          className="w-full bg-black hover:bg-gray-800 active:bg-gray-900 text-white font-semibold py-3.5 sm:py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-[0.98] touch-manipulation"
+        <button
+          onClick={handleClickApply}
+          disabled={isLoading}
+          className="w-full bg-black hover:bg-gray-800 active:bg-gray-900 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3.5 sm:py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-[0.98] touch-manipulation"
         >
-          <span className="text-sm sm:text-base">Apply Now</span>
-          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+          {isLoading ? (
+            <>
+              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-sm sm:text-base">Processing...</span>
+            </>
+          ) : (
+            <>
+              <span className="text-sm sm:text-base">Apply Now</span>
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+            </>
+          )}
         </button>
 
         {sessionUrl && <Veriff sessionUrl={sessionUrl} />}

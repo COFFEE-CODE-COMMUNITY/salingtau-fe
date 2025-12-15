@@ -1,4 +1,4 @@
-import { BookOpen, DollarSign, Star, Users, TrendingUp } from 'lucide-react'
+import { BookOpen, DollarSign, Users } from 'lucide-react'
 
 interface DashboardStats {
   totalRevenue: number
@@ -35,8 +35,6 @@ export default function OverviewSection({ name, stats, formatCurrency }: Overvie
     "Every course you build is a new door for someone."
   ]
 
-  // Note: In a real app, you might want to stabilize this with useMemo or useEffect to prevent flickering on re-renders
-  // For now, keeping logic as requested.
   const randomMessage = messages[Math.floor(Math.random() * messages.length)]
 
   return (
@@ -49,7 +47,7 @@ export default function OverviewSection({ name, stats, formatCurrency }: Overvie
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* Total Revenue */}
           <div className="group bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
@@ -57,16 +55,11 @@ export default function OverviewSection({ name, stats, formatCurrency }: Overvie
               <div className="bg-green-100 p-3 rounded-xl group-hover:bg-green-200 transition-colors duration-300">
                 <DollarSign className="w-6 h-6 text-green-600" />
               </div>
-              <span className="flex items-center gap-1 text-sm font-bold text-green-600 bg-green-100/50 px-2 py-1 rounded-full">
-                <TrendingUp className="w-3 h-3" />
-                {stats.revenueGrowth > 0 ? '+' : ''}{stats.revenueGrowth}%
-              </span>
             </div>
             <p className="text-sm font-medium text-gray-600 mb-1">Total Revenue</p>
             <p className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight truncate">
               {formatCurrency(stats.totalRevenue)}
             </p>
-            <p className="text-xs text-gray-500 mt-2 font-medium">From {stats.totalEnrollments} enrollments</p>
           </div>
 
           {/* Total Students */}
@@ -75,14 +68,9 @@ export default function OverviewSection({ name, stats, formatCurrency }: Overvie
               <div className="bg-blue-100 p-3 rounded-xl group-hover:bg-blue-200 transition-colors duration-300">
                 <Users className="w-6 h-6 text-blue-600" />
               </div>
-              <span className="flex items-center gap-1 text-sm font-bold text-blue-600 bg-blue-100/50 px-2 py-1 rounded-full">
-                <TrendingUp className="w-3 h-3" />
-                {stats.studentGrowth > 0 ? '+' : ''}{stats.studentGrowth}
-              </span>
             </div>
             <p className="text-sm font-medium text-gray-600 mb-1">Total Students</p>
             <p className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{stats.totalStudents}</p>
-            <p className="text-xs text-gray-500 mt-2 font-medium">Across all courses</p>
           </div>
 
           {/* Published Courses */}
@@ -91,31 +79,10 @@ export default function OverviewSection({ name, stats, formatCurrency }: Overvie
               <div className="bg-purple-100 p-3 rounded-xl group-hover:bg-purple-200 transition-colors duration-300">
                 <BookOpen className="w-6 h-6 text-purple-600" />
               </div>
-              <span className="text-xs font-bold text-purple-600 bg-purple-100/50 px-2 py-1 rounded-full">
-                {stats.pendingCourses} pending
-              </span>
             </div>
             <p className="text-sm font-medium text-gray-600 mb-1">Published Courses</p>
             <p className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{stats.publishedCourses}</p>
-            <p className="text-xs text-gray-500 mt-2 font-medium">Out of {stats.totalCourses} total</p>
           </div>
-
-          {/* Average Rating */}
-          <div className="group bg-gradient-to-br from-amber-50 to-yellow-50 p-6 rounded-2xl border border-amber-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
-            <div className="flex items-center justify-between mb-4">
-              <div className="bg-amber-100 p-3 rounded-xl group-hover:bg-amber-200 transition-colors duration-300">
-                <Star className="w-6 h-6 text-amber-600" />
-              </div>
-              <span className="flex items-center gap-1 text-sm font-bold text-amber-600 bg-amber-100/50 px-2 py-1 rounded-full">
-                <TrendingUp className="w-3 h-3" />
-                +{stats.ratingChange}
-              </span>
-            </div>
-            <p className="text-sm font-medium text-gray-600 mb-1">Average Rating</p>
-            <p className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{stats.averageRating}</p>
-            <p className="text-xs text-gray-500 mt-2 font-medium">From {stats.totalReviews} reviews</p>
-          </div>
-          
         </div>
       </div>
     </section>

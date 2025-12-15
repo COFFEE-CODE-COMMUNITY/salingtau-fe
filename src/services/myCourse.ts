@@ -59,7 +59,6 @@ export const useMyCourses = () => {
       setTotal(response.meta.totalItems)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch my courses")
-      console.error("Error fetching my courses:", err)
     } finally {
       setLoading(false)
     }

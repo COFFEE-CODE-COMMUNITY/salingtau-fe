@@ -4,6 +4,7 @@ import {useUser} from "@/utils/user-context.tsx";
 
 // Types
 export interface Thumbnail {
+  path: string;
   url: string
   width: number
   height: number
@@ -72,7 +73,7 @@ interface CoursesResponse {
 
 // Service functions
 export const getCourses = async (userId: string): Promise<CoursesResponse> => {
-  const response = await api.get("/transaction/student", {
+  const response = await api.get("/courses", {
     params: {
       userId: userId,
       purchased: false,
