@@ -223,9 +223,6 @@ const CourseDetailPage = () => {
               </h1>
 
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">
-                <div className="flex items-center gap-1">
-                  <Star className="text-yellow-400 fill-yellow-400" size={16} />
-                </div>
                 <div className="flex items-center gap-2">
                   <img
                     src={getProfilePictureUrl(courseData.instructor.profilePictures)}
