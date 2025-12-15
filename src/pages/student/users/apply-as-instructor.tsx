@@ -2,9 +2,29 @@ import { Users, Clock, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useState } from "react";
 import Veriff from "@/pages/student/users/veriff.tsx";
 import api from "@/services/api.ts";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function ApplyAsInstructor() {
-  const [sessionUrl, setSessionUrl] = useState<string | null>(null)
+  const [sessionUrl, setSessionUrl] = useState<string | null>(null);
+
+  // Alert Dialog states
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const showAlert = (type: 'success' | 'error', message: string) => {
+    setAlertType(type);
+    setAlertMessage(message);
+    setAlertOpen(true);
+  };
 
   const handleClickApply = async () => {
     try {
@@ -12,17 +32,40 @@ export default function ApplyAsInstructor() {
         "/users/me/apply-as-instructor",
         {},
         { withCredentials: true }
-      )
+      );
 
-      setSessionUrl(res.data.url)
-    } catch (err) {
-      console.error("Error apply-as-instructor:", err)
+      setSessionUrl(res.data.url);
+      showAlert('success', 'Application submitted successfully! Please complete the identity verification process.');
+    } catch (err: any) {
+      showAlert(
+        'error',
+        err.response?.data?.message || 'Failed to submit application. Please try again.'
+      );
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-white/80 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
+        {/* Alert Dialog */}
+        <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {alertType === 'success' ? '✅ Success' : '❌ Error'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {alertMessage}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setAlertOpen(false)}>
+                OK
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {/* Header Section */}
         <div className="text-center mb-8 sm:mb-12">
           <div className="inline-block bg-black text-white px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4">
@@ -116,8 +159,8 @@ export default function ApplyAsInstructor() {
         </div>
 
         {/* CTA Button */}
-        <button 
-          onClick={handleClickApply} 
+        <button
+          onClick={handleClickApply}
           className="w-full bg-black hover:bg-gray-800 active:bg-gray-900 text-white font-semibold py-3.5 sm:py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-[0.98] touch-manipulation"
         >
           <span className="text-sm sm:text-base">Apply Now</span>

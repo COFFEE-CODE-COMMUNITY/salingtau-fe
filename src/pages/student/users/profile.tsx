@@ -3,7 +3,16 @@ import { Camera, Globe, Facebook, Instagram, Linkedin, Youtube, Twitter, Loader2
 import { useUser } from '@/utils/user-context.tsx';
 import { FALLBACK_USER } from '@/utils/fallbackProfile.ts';
 import api from '@/services/api.ts';
-import {getMe} from "@/services/getMe.ts";
+import { getMe } from "@/services/getMe.ts";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const UserProfilePage = () => {
   const { user: contextUser, saveUser } = useUser();
@@ -13,13 +22,23 @@ const UserProfilePage = () => {
   const [formData, setFormData] = useState({ ...user });
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Alert Dialog states
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+  const [alertMessage, setAlertMessage] = useState('');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setFormData({ ...user });
   }, [user]);
+
+  const showAlert = (type: 'success' | 'error', message: string) => {
+    setAlertType(type);
+    setAlertMessage(message);
+    setAlertOpen(true);
+  };
 
   const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
     const { name, value } = e.target;
@@ -29,80 +48,71 @@ const UserProfilePage = () => {
     }));
   };
 
-  // Upload Profile Picture
   const handlePhotoClick = () => {
     if (user.id === 'fallback-user') return;
     fileInputRef.current?.click();
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setSaveError("Please select an image file")
-      return
+      showAlert('error', 'Please select an image file');
+      return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setSaveError("Image size should be less than 5MB")
-      return
+      showAlert('error', 'Image size should be less than 5MB');
+      return;
     }
 
-    setIsUploadingPhoto(true)
-    setSaveError(null)
-    setSaveSuccess(false)
+    setIsUploadingPhoto(true);
 
     try {
       const response = await api.put("/users/me/profile-picture", file, {
         headers: { "Content-Type": file.type },
-      })
+      });
 
       if (response.status === 200) {
-        const refreshedUser = await getMe()
+        const refreshedUser = await getMe();
         if (refreshedUser) {
           const originalUrl =
             refreshedUser.profilePictures?.[0]?.url ||
-            response.data?.profilePictureUrl
+            response.data?.profilePictureUrl;
 
           if (originalUrl) {
-            const newUrl = `${originalUrl}?t=${Date.now()}`
+            const newUrl = `${originalUrl}?t=${Date.now()}`;
             refreshedUser.profilePictures = [
               { url: newUrl, width: 400, height: 400 },
-            ]
+            ];
           }
 
-          saveUser(refreshedUser)
+          saveUser(refreshedUser);
         }
 
-        // Notifikasi sukses
-        setSaveSuccess(true)
-        setTimeout(() => setSaveSuccess(false), 3000)
+        showAlert('success', 'Profile picture updated successfully!');
       } else {
-        throw new Error("Failed to upload profile picture")
+        throw new Error("Failed to upload profile picture");
       }
     } catch (error: any) {
-      setSaveError(
+      showAlert(
+        'error',
         error.response?.data?.message ||
         "Failed to upload profile picture. Please try again."
-      )
+      );
     } finally {
-      setIsUploadingPhoto(false)
-      if (fileInputRef.current) fileInputRef.current.value = ""
+      setIsUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
-  }
+  };
 
-
-  // Save Profile Data
   const handleSave = async () => {
-    if (user.id === 'fallback-user') return
+    if (user.id === 'fallback-user') return;
 
-    setIsSaving(true)
-    setSaveError(null)
-    setSaveSuccess(false)
+    setIsSaving(true);
 
     try {
-      // Daftar field yang bisa diedit
       const editableFields = [
         'firstName',
         'lastName',
@@ -115,53 +125,51 @@ const UserProfilePage = () => {
         'xUrl',
         'youtubeUrl',
         'tiktokUrl',
-      ]
+      ];
 
-      const payload: Record<string, string | null> = {}
+      const payload: Record<string, string | null> = {};
 
       editableFields.forEach((field) => {
-        const original = (user as any)[field] ?? ''
-        const updated = (formData as any)[field] ?? ''
+        const original = (user as any)[field] ?? '';
+        const updated = (formData as any)[field] ?? '';
 
         if (original !== updated) {
-          payload[field] = updated === '' ? null : updated
+          payload[field] = updated === '' ? null : updated;
         }
-      })
+      });
 
       if (Object.keys(payload).length === 0) {
-        setIsEditing(false)
-        setIsSaving(false)
-        return
+        setIsEditing(false);
+        setIsSaving(false);
+        return;
       }
 
-      const response = await api.patch('/users/me', payload)
+      const response = await api.patch('/users/me', payload);
 
       if (response.status === 200 && response.data) {
-        saveUser(response.data)
-        setIsEditing(false)
-        setSaveSuccess(true)
-        setTimeout(() => setSaveSuccess(false), 3000)
+        saveUser(response.data);
+        setIsEditing(false);
+        showAlert('success', 'Profile updated successfully!');
       } else {
-        throw new Error('Failed to update profile')
+        throw new Error('Failed to update profile');
       }
     } catch (error: any) {
-      setSaveError(
+      showAlert(
+        'error',
         error.response?.data?.message ||
         'Failed to update profile. Please try again.'
-      )
+      );
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
-
+  };
 
   const handleCancel = () => {
     setFormData({ ...user });
     setIsEditing(false);
-    setSaveError(null);
   };
 
-  const profilePictureUrl = user.profilePictures?.[0]?.url || "/fallback-avatar.jpg"
+  const profilePictureUrl = user.profilePictures?.[0]?.url || "/fallback-avatar.jpg";
 
   const socialLinks = [
     { name: 'Website', url: user.websiteUrl, icon: Globe },
@@ -175,25 +183,26 @@ const UserProfilePage = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-6 sm:py-8 px-3 sm:px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Success Message - Responsif */}
-        {saveSuccess && (
-          <div className="mb-4 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg shadow-sm animate-slide-down">
-            <p className="text-green-800 text-xs sm:text-sm font-medium">
-              ✅ Profile updated successfully!
-            </p>
-          </div>
-        )}
+        {/* Alert Dialog */}
+        <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {alertType === 'success' ? '✅ Success' : '❌ Error'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {alertMessage}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setAlertOpen(false)}>
+                OK
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
-        {/* Error Message - Responsif */}
-        {saveError && (
-          <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg shadow-sm animate-slide-down">
-            <p className="text-red-800 text-xs sm:text-sm font-medium break-words">
-              ❌ {saveError}
-            </p>
-          </div>
-        )}
-
-        {/* Profile Picture Section - Responsif */}
+        {/* Profile Picture Section */}
         <div className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-4 sm:p-6 mb-4 sm:mb-6">
           <div className="flex flex-col items-center">
             <div
@@ -201,18 +210,16 @@ const UserProfilePage = () => {
               onClick={handlePhotoClick}
             >
               <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  <img
-                    src={profilePictureUrl}
-                    alt={`${user.firstName} ${user.lastName}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = "/fallback-avatar.jpg"
-                    }}
-                  />
+                <img
+                  src={profilePictureUrl}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/fallback-avatar.jpg";
+                  }}
+                />
               </div>
 
-
-              {/* Hover Overlay - dengan scale effect */}
               {user.id !== 'fallback-user' && (
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-gray-800 bg-opacity-0 group-hover:bg-opacity-70 rounded-full transition-all duration-300 flex items-center justify-center">
                   {isUploadingPhoto ? (
@@ -224,7 +231,6 @@ const UserProfilePage = () => {
               )}
             </div>
 
-            {/* Hidden file input */}
             <input
               ref={fileInputRef}
               type="file"
@@ -248,7 +254,7 @@ const UserProfilePage = () => {
           </div>
         </div>
 
-        {/* Profile Information Section - Responsif */}
+        {/* Profile Information Section */}
         <div className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Informasi Profile</h2>
@@ -459,28 +465,10 @@ const UserProfilePage = () => {
               )}
             </div>
 
-            {/* Account Info - Responsif */}
+            {/* Account Info */}
             <div className="pt-3 sm:pt-4 border-t border-gray-200">
               <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">Informasi Akun</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
-                <div>
-                  <span className="text-gray-500">Status:</span>
-                  <span className={`ml-2 inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user.status === 'active' ? 'bg-green-100 text-green-800' :
-                      user.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
-                        'bg-red-100 text-red-800'
-                  }`}>
-                    {user.status}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Bahasa:</span>
-                  <span className="ml-2 text-gray-900">{user.language}</span>
-                </div>
-                <div className="sm:col-span-2">
-                  <span className="text-gray-500">Role:</span>
-                  <span className="ml-2 text-gray-900">{user.roles.join(', ')}</span>
-                </div>
                 <div className="sm:col-span-2">
                   <span className="text-gray-500">Bergabung sejak:</span>
                   <span className="ml-2 text-gray-900 break-words">
@@ -508,23 +496,6 @@ const UserProfilePage = () => {
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes slide-down {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-slide-down {
-          animation: slide-down 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 };

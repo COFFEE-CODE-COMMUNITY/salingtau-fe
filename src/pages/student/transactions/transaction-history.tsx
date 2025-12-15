@@ -2,7 +2,23 @@ import { Calendar, CreditCard, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTransactionHistory, PaymentStatus } from "@/services/transactionHistory.ts";
 import { useUser } from "@/utils/user-context.tsx";
-import { getCourseThumbnailUrl } from "@/utils/imageUtils";
+
+export function buildImageUrl(path: string | null | undefined): string {
+  const API_BASE_URL = import.meta.env.VITE_BASE_IMAGE_URL || 'http://localhost:8081/api/v1';
+  const DEFAULT_IMAGE = '/placeholder-image.jpg';
+
+  if (!path) {
+    return DEFAULT_IMAGE;
+  }
+
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+
+  return `${API_BASE_URL}/${cleanPath}`;
+}
 
 export default function TransactionHistory() {
   const navigate = useNavigate();
@@ -86,7 +102,7 @@ export default function TransactionHistory() {
                   <div className="flex items-start gap-4">
                     {/* Course Thumbnail */}
                     <img
-                      src={getCourseThumbnailUrl(transaction.course.thumbnail)}
+                      src={buildImageUrl(transaction.course.thumbnail.path)}
                       alt={transaction.course.title}
                       className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
                     />

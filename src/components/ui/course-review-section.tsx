@@ -1,9 +1,9 @@
-import { useState, useMemo, useEffect } from "react";
-import { ChevronDown, Edit2, Trash2 } from "lucide-react";
+import {useState, useMemo, useEffect} from "react";
+import {ChevronDown, Edit2, Trash2} from "lucide-react";
 import ReviewCard from "./review-card.tsx";
-import { StarRating } from "@/components/ui/star-rating.tsx";
-import { SortByReview } from "@/components/ui/sort-by-review.tsx";
-import { purchaseStatusRating } from "@/services/purchaseStatusRating.ts";
+import {StarRating} from "@/components/ui/star-rating.tsx";
+import {SortByReview} from "@/components/ui/sort-by-review.tsx";
+import {purchaseStatusRating} from "@/services/purchaseStatusRating.ts";
 import api from "@/services/api.ts";
 
 interface Review {
@@ -35,12 +35,13 @@ interface RatingStats {
 }
 
 interface CourseReviewsSectionProps {
-  courseId: string;
+  courseId: string,
+  averageRating?: number
 }
 
 const PAGE_SIZE = 5;
 
-const CourseReviewsSection = ({ courseId }: CourseReviewsSectionProps) => {
+const CourseReviewsSection = ({courseId}: CourseReviewsSectionProps) => {
   const [sortOrder, setSortOrder] = useState("descending");
   const [hasPurchased, setHasPurchased] = useState(false);
   const [isCheckingPurchase, setIsCheckingPurchase] = useState(true);
@@ -50,8 +51,8 @@ const CourseReviewsSection = ({ courseId }: CourseReviewsSectionProps) => {
   const [ratingStats, setRatingStats] = useState<RatingStats>({
     totalReview: 0,
     averageRating: 0,
-    stars: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-    percentage: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+    stars: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+    percentage: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
   });
 
   // Rating form states
@@ -244,7 +245,7 @@ const CourseReviewsSection = ({ courseId }: CourseReviewsSectionProps) => {
                     onClick={() => setIsEditMode(true)}
                     className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
                   >
-                    <Edit2 size={16} />
+                    <Edit2 size={16}/>
                     Edit
                   </button>
                   <button
@@ -252,13 +253,13 @@ const CourseReviewsSection = ({ courseId }: CourseReviewsSectionProps) => {
                     disabled={isSubmitting}
                     className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={16}/>
                     Delete
                   </button>
                 </div>
               </div>
               <div className="mb-3">
-                <StarRating initialRating={userReview.rating} readonly={true} size={24} />
+                <StarRating initialRating={userReview.rating} readonly={true} size={24}/>
               </div>
               <p className="text-gray-700">{userReview.comment}</p>
             </div>
@@ -391,13 +392,14 @@ const CourseReviewsSection = ({ courseId }: CourseReviewsSectionProps) => {
             </span>
           )}
         </p>
-        <SortByReview onSortChange={handleSortChange} />
+        <SortByReview onSortChange={handleSortChange}/>
       </div>
 
       {/* Reviews List - Only Other Reviews */}
       {isLoadingReviews ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600"></div>
+          <div
+            className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-blue-600"></div>
           <p className="text-gray-500 mt-3">Loading reviews...</p>
         </div>
       ) : (
@@ -425,7 +427,7 @@ const CourseReviewsSection = ({ courseId }: CourseReviewsSectionProps) => {
             className="inline-flex items-center gap-2 px-6 py-2.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium rounded-lg transition-colors"
           >
             Show more ratings
-            <ChevronDown size={18} />
+            <ChevronDown size={18}/>
           </button>
         </div>
       )}
